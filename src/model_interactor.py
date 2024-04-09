@@ -1,9 +1,9 @@
-import parameters
+from config import parameters
 import transformers
 from transformers import pipeline
 
 
-class ModelInteractor:
+class TinyLlamaModelInteractor:
     def __init__(self):
         self.__pipe__ = pipeline(task=parameters.task, model=parameters.model,
                                  torch_dtype=parameters.torch_dtype, device_map=parameters.device_map,
