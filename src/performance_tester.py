@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import model_interactor
 import time
 from transformers import pipeline
