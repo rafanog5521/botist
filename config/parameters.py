@@ -10,7 +10,7 @@ device_map = "auto"
 # file routes
 current_dir = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.dirname(current_dir)
-models_path = root_dir + "/models/" + model
+models_path = root_dir + "/models/" + model # If you have a local folder with the model
 datasets_path = root_dir + "/datasets"
 questions_path = datasets_path + "/test-questions/questions.json"  # questions file
 parameters_path = datasets_path + "parameters.py"  # parameters file

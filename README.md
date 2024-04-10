@@ -5,6 +5,10 @@ Test framework to evaluate WER and Performance for different IA models and versi
 ## Setup
 - Put models on ./models folder
 - Put datasets on ./datasets folder
+- Set python virtual enviroment (optional)
+  - python3 -m venv env
+  - source ./env/bin/activate
+- Run pip install -r ./requirements.txt
 - Run export PYTHONPATH="${PYTHONPATH}:/yourfolders/botist/"
 - ./src/run_models.py
 
