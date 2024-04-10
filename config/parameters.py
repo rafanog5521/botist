@@ -6,6 +6,8 @@ import os
 current_dir = os.path.dirname(os.path.realpath(__file__))
 questions_path = current_dir + "/questions.txt"  # questions file
 parameters_path = current_dir + "/parameters.py"  # parameters file
+models_path = current_dir + "/models"
+datasets_path = current_dir + "/datasets"
 
 # pipeline values
 task = "text-generation"
