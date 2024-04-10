@@ -28,7 +28,7 @@ class TinyLlamaModelInteractor:
     
         answers = []
         index = 0
-        for a in outputs:
+        for _ in outputs:
             answers.append(((outputs[index]['generated_text']).split('<|assistant|>\n'))[1])
             index += 1
 
