@@ -1,30 +1,29 @@
 import torch
 import os
 
-
-# file routes
-current_dir = os.path.dirname(os.path.realpath(__file__))
-questions_path = current_dir + "/questions.txt"  # questions file
-parameters_path = current_dir + "/parameters.py"  # parameters file
-models_path = current_dir + "/models"
-datasets_path = current_dir + "/datasets"
-
 # pipeline values
 task = "text-generation"
 model = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 torch_dtype = torch.bfloat16
 device_map = "auto"
-num_return_sequences = 5  # this is the key value to control the amount of possible responses obtained
+
+# file routes
+current_dir = os.path.dirname(os.path.realpath(__file__))
+root_dir = os.path.dirname(current_dir)
+models_path = root_dir + "/models/" + model
+datasets_path = root_dir + "/datasets"
+questions_path = datasets_path + "/test-questions/questions.json"  # questions file
+parameters_path = datasets_path + "parameters.py"  # parameters file
 
 ###############################
 # prompt values
 tokenize = False
 add_generation_prompt = True
+num_return_sequences = 1  # this is the key value to control the amount of possible responses obtained
 # interaction values
-max_new_tokens = 256
+max_new_tokens = 1024
 do_sample = True
-temperature = 0.7
+temperature = 1e-32
 top_k = 50
 top_p = 0.95
-
 ###############################
