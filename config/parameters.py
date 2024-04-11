@@ -4,6 +4,7 @@ import os
 # pipeline values
 task = "text-generation"
 model = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+dataset = "/TinyLlama-test-questions/questions.json"
 torch_dtype = torch.bfloat16
 device_map = "auto"
 
@@ -12,7 +13,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.dirname(current_dir)
 models_path = root_dir + "/models/" + model # If you have a local folder with the model
 datasets_path = root_dir + "/datasets"
-questions_path = datasets_path + "/test-questions/questions.json"  # questions file
+questions_path = datasets_path + dataset  # questions file
 parameters_path = datasets_path + "parameters.py"  # parameters file
 
 ###############################
