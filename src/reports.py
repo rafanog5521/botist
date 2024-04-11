@@ -1,6 +1,6 @@
 import os.path
 from datetime import datetime
-import parameters
+from config import parameters
 
 
 class Reporter:
