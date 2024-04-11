@@ -1,13 +1,12 @@
-import os
-import sys
-
-current_dir = os.path.dirname(os.path.realpath(__file__))
 from config import parameters
 import transformers
 from transformers import pipeline
+import time
+import jiwer
+import argparse
 
 
-class TinyLlamaModelInteractor:
+class TinyLlamaModelInteractor():
     def __init__(self, answers=parameters.num_return_sequences):
         self.__pipe__ = pipeline(task=parameters.task, model=parameters.model,
                                  torch_dtype=parameters.torch_dtype, device_map=parameters.device_map,
@@ -20,20 +19,9 @@ class TinyLlamaModelInteractor:
                                                            add_generation_prompt=parameters.add_generation_prompt)
 
     def ask_question(self, question):
-        # result = {"question": question["content"]}
         prompt = self.prompt(question)
-        """
-        outputs = self.__pipe__(prompt, max_new_tokens=parameters.max_new_tokens, do_sample=parameters.do_sample,
+        output =  self.__pipe__(prompt, max_new_tokens=parameters.max_new_tokens, do_sample=parameters.do_sample,
                                 temperature=parameters.temperature, top_k=parameters.top_k, top_p=parameters.top_p)
-    
-        answers = []
-        index = 0
-        for _ in outputs:
-            answers.append(((outputs[index]['generated_text']).split('<|assistant|>\n'))[1])
-            index += 1
 
-        result["answers"] = answers
-        return result
-        """
-        return self.__pipe__(prompt, max_new_tokens=parameters.max_new_tokens, do_sample=parameters.do_sample,
-                                temperature=parameters.temperature, top_k=parameters.top_k, top_p=parameters.top_p)
+        return output[0]["generated_text"]  # .split('<|assistant|>\n')
+

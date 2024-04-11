@@ -11,7 +11,6 @@ def measure_performance(input_text):
     mi = model_interactor.TinyLlamaModelInteractor(answers=1)
 
     # Generate response from TinyLLAMA
-    #response = pipe(input_text, max_length=50, num_return_sequences=1)[0]["generated_text"]
     response = mi.ask_question(input_text)
 
     # End time measurement
@@ -19,7 +18,6 @@ def measure_performance(input_text):
 
     # Calculate response time
     response_time = end_time - start_time
-
     # Calculate tokens per second
     total_tokens_generated = len(response.split())
     tokens_per_second = total_tokens_generated / response_time
