@@ -1,9 +1,6 @@
 from config import parameters
 import transformers
 from transformers import pipeline
-import time
-import jiwer
-import argparse
 
 
 class TinyLlamaModelInteractor():
