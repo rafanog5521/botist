@@ -16,8 +16,7 @@ class TinyLlamaModelInteractor():
                                                            add_generation_prompt=parameters.add_generation_prompt)
 
     def init_model(self, question='Say Hello'): #Use a sample question to trigger downloads for Tinyllama resources.
-        prompt = self.prompt(question)
-        self.__pipe__(prompt, max_new_tokens=parameters.max_new_tokens, do_sample=parameters.do_sample,temperature=parameters.temperature, top_k=parameters.top_k, top_p=parameters.top_p)
+        self.prompt(question)
 
     def ask_question(self, question):
         prompt = self.prompt(question)
