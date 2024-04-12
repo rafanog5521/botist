@@ -18,6 +18,10 @@ class TinyLlamaModelInteractor():
         return self.__pipe__.tokenizer.apply_chat_template(new_q, tokenize=parameters.tokenize,
                                                            add_generation_prompt=parameters.add_generation_prompt)
 
+    def init_model(self, question='Say Hello'): #Use a sample question to trigger downloads for Tinyllama resources.
+        prompt = self.prompt(question)
+        self.__pipe__(prompt, max_new_tokens=parameters.max_new_tokens, do_sample=parameters.do_sample,temperature=parameters.temperature, top_k=parameters.top_k, top_p=parameters.top_p)
+
     def ask_question(self, question):
         prompt = self.prompt(question)
         output =  self.__pipe__(prompt, max_new_tokens=parameters.max_new_tokens, do_sample=parameters.do_sample,
