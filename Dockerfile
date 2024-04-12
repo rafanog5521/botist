@@ -1,5 +1,7 @@
 FROM ubuntu:22.04
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+ARG model
+
 
 #Update packages
 RUN apt-get update -y
@@ -12,7 +14,14 @@ RUN git clone https://github.com/rafanog5521/botist.git && cd botist && git chec
 
 #Install python dependencies
 WORKDIR /root/botist
-RUN python3 -m venv env && source ./env/bin/activate && pip install -r ./requirements.txt 
+RUN python3 -m venv env && source ./env/bin/activate && pip install -r ./requirements.txt
 
-#Run model
-RUN source ./env/bin/activate && export PYTHONPATH="${PYTHONPATH}:/root/botist/" && ./src/run_model.py
+#Setup model (if needed)
+RUN 
+
+if [[ -z "$model" ]]; then 
+    echo Model not provided;  
+else if [[ $model == "Tinyllama" ]]; then 
+    echo Argument not provided; 
+    fi;
+fi
