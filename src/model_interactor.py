@@ -1,9 +1,6 @@
 from config import parameters
 import transformers
 from transformers import pipeline
-import time
-import jiwer
-import argparse
 
 
 class TinyLlamaModelInteractor():
@@ -17,6 +14,9 @@ class TinyLlamaModelInteractor():
         new_q = [question]
         return self.__pipe__.tokenizer.apply_chat_template(new_q, tokenize=parameters.tokenize,
                                                            add_generation_prompt=parameters.add_generation_prompt)
+
+    def init_model(self, question='Say Hello'): #Use a sample question to trigger downloads for Tinyllama resources.
+        self.prompt(question)
 
     def ask_question(self, question):
         prompt = self.prompt(question)
