@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 from model_interactor import TinyLlamaModelInteractor
 from config import parameters
-import json
+import json, argparse
 from tqdm import tqdm
 import random
 
-question_amount = 3
+parser = argparse.ArgumentParser(description='Run model')
+parser.add_argument('--init_only', help='Trigger a sample run to download requirements', required=False, action=argparse.BooleanOptionalAction)
+parser.add_arguument('-q', type=int, default=3, help='Amount of questions to evaulate the model(3 by default)', required=False)
+args = vars(parser.parse_args())
 
 if 'TinyLlama' in parameters.model:
     interactor = TinyLlamaModelInteractor()
-
-    question = open(parameters.questions_path, 'r')
-
-    with open(parameters.questions_path, 'r') as file:
+    if args['init_only']:
+        interactor.init_model()
+    else:
+        with open(parameters.questions_path, 'r') as file:
         full_questionnaire = json.load(file)
         # Load a random subset of n questions to execute the tests
         question_numbers = [random.randint(0, len(full_questionnaire)) for _ in range(question_amount)]

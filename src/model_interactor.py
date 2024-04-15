@@ -17,6 +17,10 @@ class TinyLlamaModelInteractor:
         return self.__pipe__.tokenizer.apply_chat_template(new_q, tokenize=parameters.tokenize,
                                                            add_generation_prompt=parameters.add_generation_prompt)
 
+
+    def init_model(self, question='Say Hello'): #Use a sample question to trigger downloads for Tinyllama resources.
+        self.prompt(question)
+
     def ask_question(self, question, performance_metric=True):
         prompt = self.prompt(question)
         if performance_metric:
