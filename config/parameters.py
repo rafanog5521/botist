@@ -5,7 +5,8 @@ import os, torch
 class PipelineParams:
     def __init__(self):
         self.task = "text-generation"
-        self.model = "Phi"
+        self.model = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+        #self.model = "Phi"
         self.torch_dtype = torch.bfloat16
         self.device_map = "auto"
 
