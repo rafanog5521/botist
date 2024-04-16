@@ -11,8 +11,10 @@ device_map = "auto"
 current_dir = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.dirname(current_dir)
 models_path = root_dir + "/models/" + model # If you have a local folder with the model
-datasets_path = root_dir + "/datasets"
-questions_path = datasets_path + "/test-questions/questions.json"  # questions file
+dataset_local = root_dir + "/data"
+datasets_path = "HuggingFaceH4/ultrafeedback_binarized"
+dataset_subset = "train_prefs"
+questions_path = dataset_local + "/test-questions/questions.json"  # questions file
 parameters_path = datasets_path + "parameters.py"  # parameters file
 
 ###############################
@@ -27,3 +29,6 @@ temperature = 1e-32
 top_k = 50
 top_p = 0.95
 ###############################
+
+num_prompts = 5
+score_base = 8

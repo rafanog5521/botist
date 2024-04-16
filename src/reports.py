@@ -1,4 +1,7 @@
 import os.path
+import jiwer
+from tqdm import tqdm
+from datasets import load_dataset
 from datetime import datetime
 from config import parameters
 
@@ -33,35 +36,27 @@ class Reporter:
         self.snapshot_file(parameters.questions_path, rep_folder)
         self.snapshot_file(parameters.parameters_path, rep_folder)
 
-    def process_answers(self, output):
-        for q in output:  # this iterates over the list of questions and their respective answers
-            vector_distance = 0
-            for answers in q["answers"]:  # this iterates over the answers list
-                vector_distance += self.compare_answers(answers)
-            output["comparison"] = vector_distance / len(answers)
+    def process_questionnaire(self, output_list, dataset_path=parameters.datasets_path):
+        print("Loading dataset...")
+        dataset_full = load_dataset(dataset_path)
+        progress_bar = tqdm(total=len(output_list), desc="Processing questionnaire...")
+    def calculate_wer(self, output_list, dataset_path):
 
-    def compare_answers(self, answers):
-        for answer in range(len(a)):
-            for possibility in range(len(a)):
-                if possibility != answer:
-                    vector_distance += self.levenshtein_distance(answer, possibility)
+        # Transformación para la normalización de los textos
+        transformation = jiwer.Compose([
+            jiwer.ToLowerCase(),
+            jiwer.RemoveMultipleSpaces(),
+            jiwer.RemovePunctuation(),
+            jiwer.RemoveWhiteSpace(replace_by_space=True),
+            jiwer.Strip(),
+        ])
 
-    def levenshtein_distance(self, a1, a2):
-        # this function measures the distance between one answer and another applying the levenshtein distance edition
-        # measurement which considers the minimum changes that need to be made in a string to transform it into another
-        matrix = [[0] * (len(a2) + 1) for _ in range(len(a1) + 1)]
+        # Calcula el WER usando jiwer
+        wer_score = jiwer.wer(
+            reference_texts,
+            model_outputs,
+            truth_transform=transformation,
+            hypothesis_transform=transformation
+        )
 
-        # Inicializar la primera fila y la primera columna
-        for i in range(len(a1) + 1):
-            matrix[i][0] = i
-        for j in range(len(a2) + 1):
-            matrix[0][j] = j
-
-        # calculate levenshtein distance
-        for i in range(1, len(a1) + 1):
-            for j in range(1, len(a2) + 1):
-                cost = 0 if a1[i - 1] == a2[j - 1] else 1
-                matrix[i][j] = min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost)
-
-        # return levenshtein distance between the two strings
-        return matrix[len(a1)][len(a2)]
+        return wer_score
