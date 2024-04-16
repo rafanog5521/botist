@@ -6,6 +6,11 @@ build_docker_tinyllama:
 	docker run --name botist_tinyllama -v ./:/root/botist -it botist sh -c "export PYTHONPATH="${PYTHONPATH}:/root" && /root/botist/src/run_model.py --init_only"
 	docker commit botist_tinyllama botist:latest
 
+build_docker_phi:
+	make build_docker
+	docker run --name botist_phi -v ./:/root/botist -it botist sh -c "export PYTHONPATH="${PYTHONPATH}:/root" && /root/botist/src/run_model.py --init_only"
+	docker commit botist_phi botist:latest
+
 run_model:
 	docker run -v ./:/root/botist -it botist:latest sh -c "export PYTHONPATH="${PYTHONPATH}:/root" && /root/botist/src/run_model.py"
 
