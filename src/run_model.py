@@ -32,8 +32,12 @@ if 'TinyLlama' in parameters.model or 'Phi' in parameters.model:
 
             for q in questionnaire:
                 resp = interactor.ask_question(question=q)
+                print ("QUESTION: ",q['content'])
+                print ("ANSWER: ",resp['output'])
+                print ("\n")
                 q.update({"response": resp})
                 progress_bar.update(1)
             progress_bar.close()
 
+            print ("\nFULL QUESTIONNAIRE: ")
             print(questionnaire)
