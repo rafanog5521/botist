@@ -7,7 +7,7 @@ import random
 
 parser = argparse.ArgumentParser(description='Run model')
 parser.add_argument('--init_only', help='Trigger a sample run to download requirements', required=False, action=argparse.BooleanOptionalAction)
-parser.add_argument('-q', '--questions', type=int, default=1, help='Amount of questions to evaluate the model(3 by default)', required=False)
+parser.add_argument('-q', '--questions', type=int, default=3, help='Amount of questions to evaluate the model(3 by default)', required=False)
 args = vars(parser.parse_args())
 
 parameters = PipelineParams()

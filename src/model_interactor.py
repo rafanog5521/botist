@@ -59,11 +59,13 @@ class PhiModelInteractor:
         self.prompt(question)
 
     def ask_question(self, question, performance_metric=True):
-        prompt = self.prompt(question['content'])
+        prompt = self.prompt("Instruct: "+question['content']+"\nOutput")
         if performance_metric:
             start_time = time.time()
         output = self.model.generate(**prompt, max_length=self.phi_param.max_length)
-        response = {"output": self.tokenizer.batch_decode(output)[0]}
+        readable_output = (self.tokenizer.batch_decode(output)[0].split('\n<|endoftext|>'))[0]
+        readable_output = readable_output.split("\nOutput: ")[1]
+        response = {"output": readable_output}
 
         if performance_metric:
             end_time = time.time()
