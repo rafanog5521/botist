@@ -42,3 +42,4 @@ datasets_path = root_dir + "/data"
 questions_path = datasets_path + "/test-questions/questions.json"  # questions file
 parameters_path = datasets_path + "parameters.py"  # parameters file
 num_prompts = 5
+score_base = 9

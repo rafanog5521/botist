@@ -16,8 +16,8 @@ class TinyLlamaModelInteractor:
                                  torch_dtype=self.pipe_param.torch_dtype, device_map=self.pipe_param.device_map,
                                  num_return_sequences=self.tiny_param.num_return_sequences)
         transformers.logging.set_verbosity(transformers.logging.CRITICAL)  # disable base warnings
-        # Might need to include a parameter while initiating the interactor class to differentiate when used in init_model mode or isolate this into a different method
-        # self.data_interactor = DatasetInteractor(self.tiny_param.dataset, self.tiny_param.dataset_subset).select_prompts_sample()
+        self.dataset = self.tiny_param.dataset
+        self.dataset_subset = self.tiny_param.dataset_subset
 
     def prompt(self, question):
         new_q = [question]
@@ -84,20 +84,21 @@ class PhiModelInteractor:
         return response
 
 class DatasetInteractor:
-    def __init__(self, path, subset):
+    def __init__(self, dataset, subset):
         try:
-            print(f"Loading \"{path}\" as dataset to be used")
-            self.dataset = load_dataset(path)
+            print(f"Loading \"{dataset}\" as dataset to be used")
+            self.dataset = load_dataset(dataset)
         except Exception as e:
             print(f"Error loading dataset: {e}")
             raise
         else:
-            self.dataset_subset = parameters.dataset_subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
+            self.dataset_name = dataset
+            self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
             self.dataset = self.dataset[self.dataset_subset]
 
     def process_dataset_format(self, data):  # This is to standardize the format of the prompt list for report purpose
         progress_bar = tqdm(total=len(data), desc="Formatting dataset:")
-        if "ultrafeedback_binarized" in parameters.datasets_path:
+        if "ultrafeedback_binarized" in self.dataset_name:
             processed_data = []
             for p in data:
                 prompt = {"role": "user", "content": p["prompt"], "prompt_id": p["prompt_id"],
@@ -107,14 +108,14 @@ class DatasetInteractor:
             progress_bar.close()
             return processed_data
         else:
-            print(f"{parameters.datasets_path} is currently not recognized by the framework...")
+            print(f"{self.dataset} is currently not recognized by the framework...")
             raise
     def select_prompts_sample(self):
         # We filter the dataset to narrow the amount of prompts(selecting scores accordingly to
         # what is defined in the parameters)
-        print(f"Selecting randomized samples from \"{parameters.dataset_subset}\" subset")
-        filtered_dataset = self.dataset.filter(lambda example: example["score_chosen"] >= parameters.score_base)
+        print(f"Selecting randomized samples from \"{self.dataset_subset}\" subset")
+        filtered_dataset = self.dataset.filter(lambda example: example["score_chosen"] >= score_base)
         filtered_dataset = filtered_dataset.shuffle()  #shuffled to randomize it
-        random_sample = filtered_dataset.select(range(parameters.num_prompts))
+        random_sample = filtered_dataset.select(range(num_prompts))
         return self.process_dataset_format(random_sample)
 
