@@ -1,6 +1,8 @@
+from datasets import load_dataset
 from config.parameters import *
 import transformers
 import torch, time
+from tqdm import tqdm
 #Tinyllama
 from transformers import pipeline
 #Phi
@@ -14,6 +16,8 @@ class TinyLlamaModelInteractor:
                                  torch_dtype=self.pipe_param.torch_dtype, device_map=self.pipe_param.device_map,
                                  num_return_sequences=self.tiny_param.num_return_sequences)
         transformers.logging.set_verbosity(transformers.logging.CRITICAL)  # disable base warnings
+        self.dataset = self.tiny_param.dataset
+        self.dataset_subset = self.tiny_param.dataset_subset
 
     def prompt(self, question):
         new_q = [question]
@@ -78,3 +82,40 @@ class PhiModelInteractor:
             response.update({"tokens_per_second": tokens_per_second})
 
         return response
+
+class DatasetInteractor:
+    def __init__(self, dataset, subset):
+        try:
+            print(f"Loading \"{dataset}\" as dataset to be used")
+            self.dataset = load_dataset(dataset)
+        except Exception as e:
+            print(f"Error loading dataset: {e}")
+            raise
+        else:
+            self.dataset_name = dataset
+            self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
+            self.dataset = self.dataset[self.dataset_subset]
+
+    def process_dataset_format(self, data):  # This is to standardize the format of the prompt list for report purpose
+        progress_bar = tqdm(total=len(data), desc="Formatting dataset:")
+        if "ultrafeedback_binarized" in self.dataset_name:
+            processed_data = []
+            for p in data:
+                prompt = {"role": "user", "content": p["prompt"], "prompt_id": p["prompt_id"],
+                          "expected_response": p["chosen"][1]}
+                processed_data.append(prompt)
+                progress_bar.update(1)
+            progress_bar.close()
+            return processed_data
+        else:
+            print(f"{self.dataset} is currently not recognized by the framework...")
+            raise
+    def select_prompts_sample(self):
+        # We filter the dataset to narrow the amount of prompts(selecting scores accordingly to
+        # what is defined in the parameters)
+        print(f"Selecting randomized samples from \"{self.dataset_subset}\" subset")
+        filtered_dataset = self.dataset.filter(lambda example: example["score_chosen"] >= score_base)
+        filtered_dataset = filtered_dataset.shuffle()  #shuffled to randomize it
+        random_sample = filtered_dataset.select(range(num_prompts))
+        return self.process_dataset_format(random_sample)
+

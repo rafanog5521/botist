@@ -1,0 +1,402 @@
+[
+    {
+        "role": "user",
+        "content": "What is the capital of France?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many continents are there in the world?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who wrote \"Romeo and Juliet\"?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical symbol for water?\n"
+    },
+    {
+        "role": "user",
+        "content": "What year did World War II end?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many sides does a hexagon have?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who painted the Mona Lisa?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the currency of Japan?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the boiling point of water in Celsius?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the largest planet in our solar system?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who was the first man to step on the moon?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the speed of light in a vacuum?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the square root of 64?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who is the current president of the United States?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many bones are there in the human body?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the capital of Australia?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the tallest mountain in the world?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who wrote \"To Kill a Mockingbird\"?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical symbol for gold?\n"
+    },
+    {
+        "role": "user",
+        "content": "What year did the Titanic sink?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many players are there in a football team?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who painted \"Starry Night\"?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the currency of Brazil?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the freezing point of water in Fahrenheit?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the smallest prime number?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who discovered penicillin?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical formula for table salt?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many degrees are in a right angle?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who was the first female prime minister of the United Kingdom?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the speed of sound in air?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many sides does a pentagon have?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who wrote \"1984\"?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the currency of India?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the melting point of ice in Kelvin?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the capital of Canada?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the most abundant gas in the Earth's atmosphere?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who painted \"The Last Supper\"?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the currency of Russia?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the boiling point of water in Fahrenheit?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical symbol for iron?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many planets are there in our solar system?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who was the first person to discover America?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the largest ocean on Earth?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who wrote \"The Catcher in the Rye\"?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical symbol for oxygen?\n"
+    },
+    {
+        "role": "user",
+        "content": "What year did the Berlin Wall fall?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many continents are there in Africa?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the currency of China?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the capital of Argentina?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the largest mammal in the world?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who painted the ceiling of the Sistine Chapel?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the currency of Mexico?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the freezing point of water in Kelvin?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical symbol for carbon?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many states are there in the United States?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who wrote \"Hamlet\"?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the currency of South Africa?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the boiling point of water in Kelvin?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the capital of Spain?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical symbol for silver?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many legs does a spider have?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who discovered gravity?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical formula for hydrogen peroxide?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many meters are in a kilometer?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who was the first woman to win a Nobel Prize?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical symbol for helium?\n"
+    },
+    {
+        "role": "user",
+        "content": "What year did the American Civil War end?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many time zones are there in the world?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who wrote \"Pride and Prejudice\"?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the currency of the United Kingdom?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the capital of Italy?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical symbol for sodium?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many years are there in a century?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who discovered electricity?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical formula for water?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many sides does a square have?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who painted \"The Persistence of Memory\"?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the currency of Germany?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the capital of China?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical symbol for nitrogen?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many colors are there in a rainbow?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who wrote \"The Great Gatsby\"?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the currency of France?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the capital of Russia?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical symbol for potassium?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many moons does Mars have?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who discovered the theory of relativity?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical formula for methane?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many millimeters are in a meter?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who was the first emperor of Rome?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical symbol for lead?\n"
+    },
+    {
+        "role": "user",
+        "content": "What year did the French Revolution begin?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many inches are in a foot?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who wrote \"Moby Dick\"?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical formula for carbon dioxide?\n"
+    },
+    {
+        "role": "user",
+        "content": "How many sides does an octagon have?\n"
+    },
+    {
+        "role": "user",
+        "content": "Who painted \"The Starry Night\"?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the currency of Australia?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the capital of South Africa?\n"
+    },
+    {
+        "role": "user",
+        "content": "What is the chemical symbol for calcium?\n"
+    }
+]
