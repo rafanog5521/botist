@@ -8,7 +8,7 @@ build_docker:
 
 build_docker_model:
 	make build_docker
-	sudo docker run --rm --runtime=nvidia --gpus all --name botist_model \
+	sudo docker run --runtime=nvidia --gpus all --name botist_model \
 	-v ./:/root/botist \
 	-v $(m)/:/root/botist/models/$(MODEL_PATH) \
 	-v $(d)/:/root/botist/datasets/$(DATASET_PATH) \
@@ -16,14 +16,14 @@ build_docker_model:
 	sudo docker commit botist_model botist:latest
 
 run_model:
-	sudo docker run --rm --runtime=nvidia --gpus all --name botist_model \
+	sudo docker run --runtime=nvidia --gpus all \
 	--gpus all -v ./:/root/botist \
 	-v $(m)/:/root/botist/models/$(MODEL_PATH) \
 	-v $(d)/:/root/botist/datasets/$(DATASET_PATH) \
-	-it botist sh -c "export PYTHONPATH="${PYTHONPATH}:/root" && /root/botist/src/run_model.py"
+	-it botist:latest sh -c "export PYTHONPATH="${PYTHONPATH}:/root" && /root/botist/src/run_model.py"
 
 bash:
-	sudo docker run --rm --runtime=nvidia --gpus all -v ./:/root/botist -it botist bash
+	sudo docker run --runtime=nvidia --gpus all -v ./:/root/botist -it botist bash
 
 prune:
 	sudo docker system prune -a --volumes -f
