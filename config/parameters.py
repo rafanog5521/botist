@@ -22,19 +22,19 @@ class PipelineParams:
         self.models_path = self.root_dir + "/models/" + self.model_name # If you have a local folder with the model
         if (os.path.exists(self.models_path)):
             self.model = self.models_path
-            print("\nUsing local model from ", self.model)
+            self.local_model = True
         else: 
             self.model = self.model_name
-            print("\nUsing remote model from ", self.model)
+            self.local_model = False
         
         #remote or local dataset
         self.dataset_path = self.root_dir + "/datasets/" + self.dataset_name # If you have a local folder with the dataset
         if (os.path.exists(self.dataset_path)):
             self.dataset = self.dataset_path
-            print("Using local dataset from ", self.dataset)
+            self.local_dataset = True
         else: 
             self.dataset = self.dataset_name
-            print("Using remote dataset from ", self.dataset)
+            self.local_dataset = False
 
         self.questions_path = self.dataset_path + "/test-questions/questions.json"  # questions file
         self.parameters_path = self.dataset_path + "parameters.py"  # parameters file

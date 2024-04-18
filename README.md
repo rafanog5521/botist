@@ -2,7 +2,7 @@
 Test framework to evaluate WER and Performance for different IA models and versions
 
 
-## Setup
+## Setup (local)
 - Put models on ./models folder
 - Put datasets on ./datasets folder
 - Set python virtual enviroment (optional)
@@ -11,6 +11,17 @@ Test framework to evaluate WER and Performance for different IA models and versi
 - Run pip install -r ./requirements.txt
 - Run export PYTHONPATH="${PYTHONPATH}:/yourfolders/botist/"
 - ./src/run_models.py
+
+## Setup (docker, remote model/dataset)
+- Check config/parameters.py if model and dataset are correct
+- Run "make build_docker_model" build basic docker file and download dependencies for your model
+- Run "make run_model" to run the model with your remote model/datasets
+
+## Setup (docker, local model/dataset)
+- Download model and/or dataset to a folder
+- Check config/parameters.py if model and dataset are correct
+- Run "make build_docker_model m=model_path d=dataset_path" to build basic docker file and download dependencies for your model
+- Run "make run_model m=model_path d=dataset_path" to run the model with your local model/datasets
 
 ## Measurements
 ## WER
