@@ -54,6 +54,8 @@ class PhiModelInteractor:
         self.phi_param = PhiParameters()
         self.model = AutoModelForCausalLM.from_pretrained(pipe_param.model, torch_dtype=pipe_param.torch_dtype, trust_remote_code=self.phi_param.trust_remote_code)
         self.tokenizer = AutoTokenizer.from_pretrained(pipe_param.model, trust_remote_code=self.phi_param.trust_remote_code)
+        self.dataset = self.phi_param.dataset
+        self.dataset_subset = self.phi_param.dataset_subset
         #torch.set_default_device("cuda")
 
     def prompt(self, question):
