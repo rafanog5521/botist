@@ -16,6 +16,8 @@ Test framework to evaluate WER and Performance for different IA models and versi
 - Set CUDA on your machine to run nvidia images on docker
   - Go to https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/1.13.5/install-guide.html#setting-up-docker
 - Run "docker context use default"
+- You should be able to run with GPU support (if you have an NVIDIA card)
+  ![image](https://github.com/rafanog5521/botist/assets/95366589/f3d1db6f-fcf7-4e50-a17a-f5077e8aa59a)
 
 ## Setup (docker, remote model/dataset)
 - Check config/parameters.py if model and dataset are correct
