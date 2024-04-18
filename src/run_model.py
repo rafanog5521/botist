@@ -15,7 +15,7 @@ if __name__ == "__main__":
     #Check parameters
     param = PipelineParams()
     print("\nUsing local model from ", param.model) if (param.local_model) else print("\nUsing remote model from ", param.model)
-    print("Using local dataset from ", param.dataset) if (param.dataset) else print("Using remote dataset from ", param.dataset)
+    print("Using local dataset from ", param.dataset) if (param.local_dataset) else print("Using remote dataset from ", param.dataset)
         
     #Model instantiation
     if 'TinyLlama' in param.model:

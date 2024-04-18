@@ -10,7 +10,7 @@ Test framework to evaluate WER and Performance for different IA models and versi
   - source ./env/bin/activate
 - Run pip install -r ./requirements.txt
 - Run export PYTHONPATH="${PYTHONPATH}:/yourfolders/botist/"
-- ./src/run_models.py
+- ./src/run_model.py
 
 ## Setup (docker, remote model/dataset)
 - Check config/parameters.py if model and dataset are correct
