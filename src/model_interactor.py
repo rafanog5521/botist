@@ -1,19 +1,20 @@
 from datasets import load_dataset
 from config.parameters import *
 import transformers
-import torch, time
+import time
 from tqdm import tqdm
 #Tinyllama
 from transformers import pipeline
 #Phi
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+pipe_param = PipelineParams()
+
 class TinyLlamaModelInteractor:
     def __init__(self):
         self.tiny_param = TinyLlamaParameters()
-        self.pipe_param = PipelineParams()
-        self.__pipe__ = pipeline(task=self.pipe_param.task, model=self.pipe_param.model,
-                                 torch_dtype=self.pipe_param.torch_dtype, device_map=self.pipe_param.device_map,
+        self.__pipe__ = pipeline(task=pipe_param.task, model=pipe_param.model,
+                                 torch_dtype=pipe_param.torch_dtype, device_map=pipe_param.device_map,
                                  num_return_sequences=self.tiny_param.num_return_sequences)
         transformers.logging.set_verbosity(transformers.logging.CRITICAL)  # disable base warnings
         self.dataset = self.tiny_param.dataset
@@ -50,10 +51,9 @@ class TinyLlamaModelInteractor:
 
 class PhiModelInteractor:
     def __init__(self):
-        self.pipe_param = PipelineParams()
         self.phi_param = PhiParameters()
-        self.model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2", torch_dtype=self.pipe_param.torch_dtype, trust_remote_code=self.phi_param.trust_remote_code)
-        self.tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=self.phi_param.trust_remote_code)
+        self.model = AutoModelForCausalLM.from_pretrained(pipe_param.model, torch_dtype=pipe_param.torch_dtype, trust_remote_code=self.phi_param.trust_remote_code)
+        self.tokenizer = AutoTokenizer.from_pretrained(pipe_param.model, trust_remote_code=self.phi_param.trust_remote_code)
         #torch.set_default_device("cuda")
 
     def prompt(self, question):
@@ -110,12 +110,13 @@ class DatasetInteractor:
         else:
             print(f"{self.dataset} is currently not recognized by the framework...")
             raise
+    
     def select_prompts_sample(self):
         # We filter the dataset to narrow the amount of prompts(selecting scores accordingly to
         # what is defined in the parameters)
         print(f"Selecting randomized samples from \"{self.dataset_subset}\" subset")
-        filtered_dataset = self.dataset.filter(lambda example: example["score_chosen"] >= score_base)
+        filtered_dataset = self.dataset.filter(lambda example: example["score_chosen"] >= pipe_param.score_base)
         filtered_dataset = filtered_dataset.shuffle()  #shuffled to randomize it
-        random_sample = filtered_dataset.select(range(num_prompts))
+        random_sample = filtered_dataset.select(range(pipe_param.num_prompts))
         return self.process_dataset_format(random_sample)
 
