@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM nvidia/cuda:12.1.1-devel-ubuntu22.04
 
 #Update packages
 RUN apt-get update -y

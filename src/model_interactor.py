@@ -19,6 +19,7 @@ class TinyLlamaModelInteractor:
         transformers.logging.set_verbosity(transformers.logging.CRITICAL)  # disable base warnings
         self.dataset = self.tiny_param.dataset
         self.dataset_subset = self.tiny_param.dataset_subset
+        torch.set_default_device("cuda")
 
     def prompt(self, question):
         new_q = [question]
