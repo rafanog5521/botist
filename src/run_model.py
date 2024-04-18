@@ -15,12 +15,12 @@ if __name__ == "__main__":
     #Check parameters
     param = PipelineParams()
     print("\nUsing local model from ", param.model) if (param.local_model) else print("\nUsing remote model from ", param.model)
-    print("Using local dataset from ", param.dataset) if (param.dataset) else print("Using remote dataset from ", param.dataset)
+    print("Using local dataset from ", param.dataset) if (param.local_dataset) else print("Using remote dataset from ", param.dataset)
         
     #Model instantiation
-    if 'TinyLlama' in param.model:
+    if 'TinyLlama/TinyLlama-1.1B-Chat-v1.0' in param.model:
         interactor = TinyLlamaModelInteractor()
-    elif 'Phi' in param.model:
+    elif 'microsoft/phi-2' in param.model:
         interactor = PhiModelInteractor()
     else:
         raise ValueError(f"{param.model} is not currently recognized as a model")

@@ -10,9 +10,12 @@ Test framework to evaluate WER and Performance for different IA models and versi
   - source ./env/bin/activate
 - Run pip install -r ./requirements.txt
 - Run export PYTHONPATH="${PYTHONPATH}:/yourfolders/botist/"
-- ./src/run_models.py
+- ./src/run_model.py
 
 ## Setup (docker, remote model/dataset)
+- First time only. Set CUDA on your machine to run nvidia images on docker
+  - Go to https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/1.13.5/install-guide.html#setting-up-docker
+- Run "docker context use default"
 - Check config/parameters.py if model and dataset are correct
 - Run "make build_docker_model" build basic docker file and download dependencies for your model
 - Run "make run_model" to run the model with your remote model/datasets
@@ -20,6 +23,9 @@ Test framework to evaluate WER and Performance for different IA models and versi
 ## Setup (docker, local model/dataset)
 - Download model and/or dataset to a folder
 - Check config/parameters.py if model and dataset are correct
+- parameters.py model and dataset definition should match folder structure passed on CLI
+  - Example: "home/user/Desktop/models/TinyLlama/TinyLlama-1.1B-Chat-v1.0" and "model_name = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"" on the python file # 
+  - Same applies for datasets
 - Run "make build_docker_model m=model_path d=dataset_path" to build basic docker file and download dependencies for your model
 - Run "make run_model m=model_path d=dataset_path" to run the model with your local model/datasets
 

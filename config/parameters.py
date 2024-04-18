@@ -60,6 +60,9 @@ class TinyLlamaParameters:
 # prompt values for Phi
 class PhiParameters:
     def __init__(self):
+        param = PipelineParams()
         self.max_length = 512
         self.trust_remote_code=True
         self.return_attention_mask=False
+        self.dataset = param.dataset
+        self.dataset_subset = "train_prefs"

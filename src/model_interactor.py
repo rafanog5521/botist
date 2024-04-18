@@ -19,6 +19,7 @@ class TinyLlamaModelInteractor:
         transformers.logging.set_verbosity(transformers.logging.CRITICAL)  # disable base warnings
         self.dataset = self.tiny_param.dataset
         self.dataset_subset = self.tiny_param.dataset_subset
+        torch.set_default_device("cuda")
 
     def prompt(self, question):
         new_q = [question]
@@ -54,10 +55,15 @@ class PhiModelInteractor:
         self.phi_param = PhiParameters()
         self.model = AutoModelForCausalLM.from_pretrained(pipe_param.model, torch_dtype=pipe_param.torch_dtype, trust_remote_code=self.phi_param.trust_remote_code)
         self.tokenizer = AutoTokenizer.from_pretrained(pipe_param.model, trust_remote_code=self.phi_param.trust_remote_code)
-        #torch.set_default_device("cuda")
+        self.dataset = self.phi_param.dataset
+        self.dataset_subset = self.phi_param.dataset_subset
+        # self.device = torch.device("cuda:0")
+        # self.model.cuda()
+        # torch.set_default_device("cuda")
 
     def prompt(self, question):
         return self.tokenizer(question, return_tensors="pt", return_attention_mask=self.phi_param.return_attention_mask)
+        #return self.tokenizer(question, return_tensors="pt", return_attention_mask=self.phi_param.return_attention_mask).to('cuda')
 
     def init_model(self, question='Say Hello'): #Use a sample question to trigger downloads for Phi resources.
         self.prompt(question)
