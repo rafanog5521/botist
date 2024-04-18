@@ -3,8 +3,8 @@ import jiwer
 from tqdm import tqdm
 from datasets import load_dataset
 from datetime import datetime
-from config import parameters
-
+from config.parameters import PipelineParams
+param = PipelineParams()
 
 class Reporter:
     def __init__(self, results):
@@ -33,13 +33,14 @@ class Reporter:
 
     def process_results(self, output):
         rep_folder = self.create_report_folder()
-        self.snapshot_file(parameters.questions_path, rep_folder)
-        self.snapshot_file(parameters.parameters_path, rep_folder)
+        self.snapshot_file(param.questions_path, rep_folder)
+        self.snapshot_file(param.parameters_path, rep_folder)
 
-    def process_questionnaire(self, output_list, dataset_path=parameters.datasets_path):
+    def process_questionnaire(self, output_list, dataset_path=param.dataset_path):
         print("Loading dataset...")
         dataset_full = load_dataset(dataset_path)
         progress_bar = tqdm(total=len(output_list), desc="Processing questionnaire...")
+    
     def calculate_wer(self, output_list, dataset_path):
 
         # Transformación para la normalización de los textos

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from model_interactor import *
-from config.parameters import *
 import json, argparse
 from tqdm import tqdm
 import random
@@ -26,10 +25,10 @@ if __name__ == "__main__":
     else:
         # First we define the dataset to be used(either local or in cloud or administered by the dataset library)
         if args["base_test"]:
-            with open(questions_path, 'r') as file:
+            with open(parameters.questions_path, 'r') as file:
                 full_questionnaire = json.load(file)
                 # Load a random subset of n questions to execute the tests
-                question_numbers = [random.randint(0, len(full_questionnaire)) for _ in range(num_prompts)]
+                question_numbers = [random.randint(0, len(full_questionnaire)) for _ in range(parameters.num_prompts)]
                 questionnaire = []
                 for n in question_numbers:
                     questionnaire.append(full_questionnaire[n])
