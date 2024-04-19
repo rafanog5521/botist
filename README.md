@@ -1,6 +1,9 @@
 # BOTIST
 Test framework to evaluate WER and Performance for different IA models and versions
 
+Demo video here: [Screencast from 19-04-24 08:38:02.webm](https://github.com/rafanog5521/botist/assets/95366589/e240f7b9-7860-44a7-b689-cf59b103eb99)
+
+
 
 ## Setup (local)
 - Put models on ./models folder
