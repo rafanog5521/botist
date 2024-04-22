@@ -13,24 +13,29 @@ if __name__ == "__main__":
     parser.add_argument('-b', '--base_test', help='Base test using the questions.json file specified', required=False,
                         action=argparse.BooleanOptionalAction)
     args = vars(parser.parse_args())
-    
-    parameters = PipelineParams()
-    if 'TinyLlama' in parameters.model:
+
+    #Check parameters
+    param = PipelineParams()
+    print("\nUsing local model from ", param.model) if (param.local_model) else print("\nUsing remote model from ", param.model)
+    print("Using local dataset from ", param.dataset) if (param.local_dataset) else print("Using remote dataset from ", param.dataset)
+        
+    #Model instantiation
+    if 'TinyLlama/TinyLlama-1.1B-Chat-v1.0' in param.model:
         interactor = TinyLlamaModelInteractor()
-    elif 'Phi' in parameters.model:
+    elif 'microsoft/phi-2' in param.model:
         interactor = PhiModelInteractor()
     else:
-        raise ValueError(f"{parameters.model} is not currently recognized as a model")
+        raise ValueError(f"{param.model} is not currently recognized as a model")
     
     if args['init_only']:
         interactor.init_model()
     else:
         # First we define the dataset to be used(either local or in cloud or administered by the dataset library)
         if args["base_test"]:
-            with open(questions_path, 'r') as file:
+            with open(param.questions_path, 'r') as file:
                 full_questionnaire = json.load(file)
                 # Load a random subset of n questions to execute the tests
-                question_numbers = [random.randint(0, len(full_questionnaire)) for _ in range(num_prompts)]
+                question_numbers = [random.randint(0, len(full_questionnaire)) for _ in range(param.num_prompts)]
                 questionnaire = []
                 for n in question_numbers:
                     questionnaire.append(full_questionnaire[n])
