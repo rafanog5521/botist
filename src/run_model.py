@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from model_interactor import *
 from config.parameters import *
+from reports_module import Reporter
 import json, argparse
 from tqdm import tqdm
 import random
@@ -44,13 +45,9 @@ if __name__ == "__main__":
         # Second we send the question to the model
         for q in questionnaire:
             resp = interactor.ask_question(question=q)
-            print ("QUESTION: ", q['content'])
-            print ("ANSWER: ", resp['output'])
-            print ("\n")
             q.update({"response": resp})
             progress_bar.update(1)
         progress_bar.close()
 
         # Third we generate the reports
-        print ("\nFULL QUESTIONNAIRE: ")
-        print(questionnaire)
+        Reporter(parameters).process_results(questionnaire, True)

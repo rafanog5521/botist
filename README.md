@@ -1,6 +1,9 @@
 # BOTIST
 Test framework to evaluate WER and Performance for different IA models and versions
 
+## Main functioning:
+![Functional Diagram](image.png)
+
 
 ## Setup
 - Put models on ./models folder
