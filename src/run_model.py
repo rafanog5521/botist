@@ -55,4 +55,4 @@ if __name__ == "__main__":
         progress_bar.close()
 
         # Third we generate the reports
-        Reporter(parameters).process_results(questionnaire, True)
+        Reporter(param).process_results(questionnaire, True)
