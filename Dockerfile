@@ -7,8 +7,7 @@ RUN apt-get install -y curl python3 pip git
 
 WORKDIR /root
 #Clone repository
-#RUN git clone https://github.com/rafanog5521/botist.git
-COPY ./ ./botist
+RUN git clone https://github.com/rafanog5521/botist.git
 
 #Install python dependencies
 WORKDIR /root/botist
