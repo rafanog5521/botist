@@ -97,11 +97,11 @@ class PhiModelInteractor:
 class WhisperModelInteractor:
     def __init__(self):
         self.whisper_param = WhisperParameters()
-        self.model = WhisperForConditionalGeneration.from_pretrained(pipe_param.model).to("cuda")
-        self.processor = WhisperProcessor.from_pretrained(pipe_param.model)
         self.dataset = self.whisper_param.dataset
         self.dataset_subset = self.whisper_param.dataset_subset
-        torch.set_default_device("cuda")
+        self.loaded_dataset = load_dataset(self.dataset, self.dataset_subset, split="test", trust_remote_code=True)
+        self.model = WhisperForConditionalGeneration.from_pretrained(pipe_param.model).to("cuda")
+        self.processor = WhisperProcessor.from_pretrained(pipe_param.model)
 
     def map_to_pred(self, batch):
         audio = batch["audio"]
@@ -115,11 +115,10 @@ class WhisperModelInteractor:
         return batch
 
     def init_model(self):
-        load_dataset(self.dataset, self.dataset_subset, "clean", split="test", trust_remote_code=True)
+        pass
 
     def evaluate_speech(self):
-        librispeech_test_clean = load_dataset(self.dataset, self.dataset_subset, split="test", trust_remote_code=True)
-        result = librispeech_test_clean.map(self.map_to_pred)
+        result = self.loaded_dataset.map(self.map_to_pred)
         return (result, load)
 
 class DatasetInteractor:
