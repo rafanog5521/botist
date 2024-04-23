@@ -5,8 +5,8 @@ import os, torch
 class PipelineParams:
     def __init__(self):
         #setup
-        self.model_name = "TinyLlama/TinyLlama-1.1B-Chat-v1.0" # 'microsoft/phi-2'
-        self.dataset_name = "HuggingFaceH4/ultrafeedback_binarized"
+        self.model_name = "open-ai/whisper-small.en" # 'microsoft/phi-2' "openai/whisper-small.en"
+        self.dataset_name = "librispeech_asr"
 
         self.task = "text-generation"
         self.torch_dtype = torch.bfloat16
@@ -66,3 +66,9 @@ class PhiParameters:
         self.return_attention_mask=False
         self.dataset = param.dataset
         self.dataset_subset = "train_prefs"
+# prompt values for Whisper
+class WhisperParameters:
+    def __init__(self):
+        param = PipelineParams()
+        self.dataset = param.dataset
+        self.dataset_subset = "clean"

@@ -7,6 +7,11 @@ from tqdm import tqdm
 from transformers import pipeline
 #Phi
 from transformers import AutoModelForCausalLM, AutoTokenizer
+#Whisper
+from datasets import load_dataset
+from transformers import WhisperForConditionalGeneration, WhisperProcessor
+import torch
+from evaluate import load
 
 pipe_param = PipelineParams()
 
@@ -88,6 +93,34 @@ class PhiModelInteractor:
             response.update({"tokens_per_second": tokens_per_second})
 
         return response
+
+class WhisperModelInteractor:
+    def __init__(self):
+        self.whisper_param = WhisperParameters()
+        self.model = WhisperForConditionalGeneration.from_pretrained(pipe_param.model).to("cuda")
+        self.processor = WhisperProcessor.from_pretrained(pipe_param.model)
+        self.dataset = self.whisper_param.dataset
+        self.dataset_subset = self.whisper_param.dataset_subset
+        torch.set_default_device("cuda")
+
+    def map_to_pred(self, batch):
+        audio = batch["audio"]
+        input_features = self.processor(audio["array"], sampling_rate=audio["sampling_rate"], return_tensors="pt").input_features
+        batch["reference"] = self.processor.tokenizer._normalize(batch['text'])
+
+        with torch.no_grad():
+            predicted_ids = self.model.generate(input_features.to("cuda"))[0]
+        transcription = self.processor.decode(predicted_ids)
+        batch["prediction"] = self.processor.tokenizer._normalize(transcription)
+        return batch
+
+    def init_model(self):
+        load_dataset(self.dataset, self.dataset_subset, "clean", split="test", trust_remote_code=True)
+
+    def evaluate_speech(self):
+        librispeech_test_clean = load_dataset(self.dataset, self.dataset_subset, split="test", trust_remote_code=True)
+        result = librispeech_test_clean.map(self.map_to_pred)
+        return (result, load)
 
 class DatasetInteractor:
     def __init__(self, dataset, subset):

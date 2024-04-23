@@ -7,7 +7,6 @@ build_docker:
 	sudo docker build . --tag botist
 
 build_docker_model:
-	make build_docker
 	sudo docker run --runtime=nvidia --gpus all --name botist_model \
 	-v ./:/root/botist \
 	-v $(m)/:/root/botist/models/$(MODEL_PATH) \
