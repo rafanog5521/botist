@@ -86,12 +86,17 @@ if __name__ == "__main__":
             # Second we send the question to the model
             for s in transcription_array:
                 transcription, expected_response = interactor.transcription_of_speech(speech=s)
-                print("\n\n\n")
+                print("\n\n")
                 print("TRANSCRIPTION:")
                 print(transcription)
-                print("EXPECTED RESPONSE:")
+                print("\nEXPECTED RESPONSE:")
                 print(expected_response)
+                print("\n")
                 s.update({"content": transcription})
                 s.update({"expected_response": expected_response})
                 progress_bar.update(1)
             progress_bar.close()
+
+        case None:
+            print("What type of test do you want to run? Check configuration files")
+            raise
