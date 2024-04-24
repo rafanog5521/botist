@@ -2,6 +2,7 @@ from datasets import load_dataset
 from config.parameters import *
 import transformers
 import time
+import re
 from tqdm import tqdm
 #Tinyllama
 from transformers import pipeline
@@ -99,7 +100,8 @@ class WhisperModelInteractor:
         self.whisper_param = WhisperParameters()
         self.dataset = self.whisper_param.dataset
         self.dataset_subset = self.whisper_param.dataset_subset
-        self.loaded_dataset = load_dataset(self.dataset, self.dataset_subset, split="test", trust_remote_code=True)
+        self.dataset_split = self.whisper_param.dataset_split
+        self.dataset_loaded = load_dataset(self.whisper_param.dataset, self.dataset_subset, split=self.dataset_split, trust_remote_code=True)
         self.model = WhisperForConditionalGeneration.from_pretrained(pipe_param.model).to("cuda")
         self.processor = WhisperProcessor.from_pretrained(pipe_param.model)
 
@@ -118,29 +120,50 @@ class WhisperModelInteractor:
         pass
 
     def evaluate_speech(self):
-        result = self.loaded_dataset.map(self.map_to_pred)
+        result = self.dataset_loaded.map(self.map_to_pred)
         return (result, load)
+
+    def transcription_of_speech(self, speech):
+        # load dummy dataset and read audio files
+        sample = speech["audio"]
+        input_features = self.processor(sample["array"], sampling_rate=sample["sampling_rate"], return_tensors="pt").input_features
+
+        # generate token ids
+        predicted_ids = self.model.generate(input_features.to("cuda"))[0]
+        # decode token ids to text
+        transcription = self.processor.batch_decode(predicted_ids, skip_special_tokens=True)
+        #Format output
+        transcription.remove('<|startoftranscript|>')
+        transcription.remove('<|notimestamps|>')
+        transcription.remove('<|endoftext|>')
+        transcription[0] = transcription[0].strip()
+        readable_transcription = ','.join(map(str, transcription))
+        readable_transcription = (re.sub(",", "", readable_transcription)).upper()
+        return (readable_transcription, speech["text"])
 
 class DatasetInteractor:
     def __init__(self, dataset, subset):
-        try:
-            print(f"Loading \"{dataset}\" as dataset to be used")
-            self.dataset = load_dataset(dataset)
-        except Exception as e:
-            print(f"Error loading dataset: {e}")
-            raise
-        else:
-            self.dataset_name = dataset
-            self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
-            self.dataset = self.dataset[self.dataset_subset]
+        self.dataset = load_dataset(dataset, subset, split='validation')
+        self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
 
     def process_dataset_format(self, data):  # This is to standardize the format of the prompt list for report purpose
         progress_bar = tqdm(total=len(data), desc="Formatting dataset:")
-        if "ultrafeedback_binarized" in self.dataset_name:
+        if "ultrafeedback_binarized" in pipe_param.dataset_name:
             processed_data = []
             for p in data:
                 prompt = {"role": "user", "content": p["prompt"], "prompt_id": p["prompt_id"],
                           "expected_response": p["chosen"][1]}
+                processed_data.append(prompt)
+                progress_bar.update(1)
+            progress_bar.close()
+            return processed_data
+        elif "librispeech" in pipe_param.dataset_name:
+            processed_data = []
+            for p in data:
+                prompt = {"file": p["file"], "audio": p["audio"],
+                          "text": p["text"], "speaker_id": p["speaker_id"],
+                          "chapter_id": p["chapter_id"], "id": p["id"], 
+                          "content": "", "expected_response": ""}
                 processed_data.append(prompt)
                 progress_bar.update(1)
             progress_bar.close()
@@ -153,7 +176,10 @@ class DatasetInteractor:
         # We filter the dataset to narrow the amount of prompts(selecting scores accordingly to
         # what is defined in the parameters)
         print(f"Selecting randomized samples from \"{self.dataset_subset}\" subset")
-        filtered_dataset = self.dataset.filter(lambda example: example["score_chosen"] >= pipe_param.score_base)
+        if "ultrafeedback_binarized" in pipe_param.dataset_name:
+            filtered_dataset = self.dataset.filter(lambda example: example["score_chosen"] >= pipe_param.score_base)
+        elif "librispeech" in pipe_param.dataset_name:
+            filtered_dataset = self.dataset.filter(lambda example: int(example["speaker_id"]) >= 1000)
         filtered_dataset = filtered_dataset.shuffle()  #shuffled to randomize it
         random_sample = filtered_dataset.select(range(pipe_param.num_prompts))
         return self.process_dataset_format(random_sample)

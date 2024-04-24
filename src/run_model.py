@@ -29,7 +29,7 @@ if __name__ == "__main__":
         test_type = "ask_question"
     elif 'open-ai/whisper' in param.model:
         interactor = WhisperModelInteractor()
-        test_type = "speech_evaluation"
+        test_type = "transcription_of_speech" #"speech_evaluation" #transcription_of_speech
     else:
         test_type = None
         raise ValueError(f"{param.model} is not currently recognized as a model")
@@ -78,3 +78,20 @@ if __name__ == "__main__":
             print(perf)
             wer = perf("wer")
             print(100 * wer.compute(references=result["reference"], predictions=result["prediction"]))
+
+        case 'transcription_of_speech':
+            data_interactor = DatasetInteractor(interactor.dataset, interactor.dataset_subset)
+            transcription_array = data_interactor.select_prompts_sample()  # to load the dataset to be used
+            progress_bar = tqdm(total=len(transcription_array), desc="Processing prompts:")
+            # Second we send the question to the model
+            for s in transcription_array:
+                transcription, expected_response = interactor.transcription_of_speech(speech=s)
+                print("\n\n\n")
+                print("TRANSCRIPTION:")
+                print(transcription)
+                print("EXPECTED RESPONSE:")
+                print(expected_response)
+                s.update({"content": transcription})
+                s.update({"expected_response": expected_response})
+                progress_bar.update(1)
+            progress_bar.close()

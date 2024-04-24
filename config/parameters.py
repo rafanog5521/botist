@@ -6,7 +6,7 @@ class PipelineParams:
     def __init__(self):
         #setup
         self.model_name = "open-ai/whisper-small.en" # 'microsoft/phi-2' "openai/whisper-small.en"
-        self.dataset_name = "librispeech_asr"
+        self.dataset_name = "hf-internal-testing/librispeech_asr_dummy"
 
         self.task = "text-generation"
         self.torch_dtype = torch.bfloat16
@@ -72,3 +72,4 @@ class WhisperParameters:
         param = PipelineParams()
         self.dataset = param.dataset
         self.dataset_subset = "clean"
+        self.dataset_split = "validation" #validation
