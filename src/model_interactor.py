@@ -155,7 +155,7 @@ class DatasetInteractor:
                 self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
                 self.dataset = self.dataset[self.dataset_subset]
         if "whisper" in pipe_param.model_name.lower():
-            self.dataset = load_dataset(dataset, subset, dataset_split=None)
+            self.dataset = load_dataset(dataset, subset, split='validation')
             self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
 
     def process_dataset_format(self, data):  # This is to standardize the format of the prompt list for report purpose

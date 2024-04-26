@@ -80,7 +80,7 @@ if __name__ == "__main__":
             print(100 * wer.compute(references=result["reference"], predictions=result["prediction"]))
 
         case 'transcription_of_speech':
-            data_interactor = DatasetInteractor(interactor.dataset, interactor.dataset_subset, interactor.dataset_split)
+            data_interactor = DatasetInteractor(interactor.dataset, interactor.dataset_subset)
             transcription_array = data_interactor.select_prompts_sample()  # to load the dataset to be used
             progress_bar = tqdm(total=len(transcription_array), desc="Processing prompts:")
             # Second we send the question to the model
