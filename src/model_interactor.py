@@ -143,8 +143,20 @@ class WhisperModelInteractor:
 
 class DatasetInteractor:
     def __init__(self, dataset, subset):
-        self.dataset = load_dataset(dataset, subset, split='validation')
-        self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
+        if "tinyllama" in pipe_param.model_name.lower() or "phi" in pipe_param.model_name.lower():
+            try:
+                print(f"Loading \"{dataset}\" as dataset to be used")
+                self.dataset = load_dataset(dataset)
+            except Exception as e:
+                print(f"Error loading dataset: {e}")
+                raise
+            else:
+                self.dataset_name = dataset
+                self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
+                self.dataset = self.dataset[self.dataset_subset]
+        if "whisper" in pipe_param.model_name.lower():
+            self.dataset = load_dataset(dataset, subset, dataset_split=None)
+            self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
 
     def process_dataset_format(self, data):  # This is to standardize the format of the prompt list for report purpose
         progress_bar = tqdm(total=len(data), desc="Formatting dataset:")
