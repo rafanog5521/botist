@@ -5,15 +5,15 @@ import os, torch
 class PipelineParams:
     def __init__(self):
         #setup
-        self.model_name = "open-ai/whisper-small.en" # 'microsoft/phi-2' "openai/whisper-small.en"
-        self.dataset_name = "hf-internal-testing/librispeech_asr_dummy"
+        self.model_name = "open-ai/whisper-small.en" # 'microsoft/phi-2' "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+        self.dataset_name = "hf-internal-testing/librispeech_asr_dummy" # "HuggingFaceH4/ultrafeedback_binarized"
 
         self.task = "text-generation"
         self.torch_dtype = torch.bfloat16
         self.device_map = "auto"
-        self.num_prompts = 50
+        self.num_prompts = 10
         self.score_base = 9
-        self.speaker_id = 1500
+        self.speaker_id = 1000
 
         #paths
         self.current_dir = os.path.dirname(os.path.realpath(__file__))

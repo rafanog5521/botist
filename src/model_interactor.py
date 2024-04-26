@@ -170,7 +170,7 @@ class DatasetInteractor:
         else:
             print(f"{self.dataset} is currently not recognized by the framework...")
             raise
-    
+
     def select_prompts_sample(self):
         # We filter the dataset to narrow the amount of prompts(selecting scores accordingly to
         # what is defined in the parameters)
