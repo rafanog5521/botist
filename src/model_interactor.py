@@ -96,12 +96,16 @@ class PhiModelInteractor:
         return response
 
 class WhisperModelInteractor:
-    def __init__(self):
+    def __init__(self, audio_folder="", references_folder=""):
         self.whisper_param = WhisperParameters()
-        self.dataset = self.whisper_param.dataset
-        self.dataset_subset = self.whisper_param.dataset_subset
-        self.dataset_split = self.whisper_param.dataset_split
-        self.dataset_loaded = load_dataset(self.whisper_param.dataset, self.dataset_subset, split=self.dataset_split, trust_remote_code=True)
+        if len(audio_folder) == 0 and len(references_folder) == 0:
+            self.dataset = self.whisper_param.dataset
+            self.dataset_subset = self.whisper_param.dataset_subset
+            self.dataset_split = self.whisper_param.dataset_split
+            self.dataset_loaded = load_dataset(self.whisper_param.dataset, self.dataset_subset, split=self.dataset_split, trust_remote_code=True)
+        else: # will use a defined dataset not loaded through the dataset library
+            pass
+
         self.model = WhisperForConditionalGeneration.from_pretrained(pipe_param.model).to("cuda")
         self.processor = WhisperProcessor.from_pretrained(pipe_param.model)
 
@@ -142,7 +146,7 @@ class WhisperModelInteractor:
         return (readable_transcription, (speech["text"].capitalize())+".")
 
 class DatasetInteractor:
-    def __init__(self, dataset, subset):
+    def __init__(self, dataset, subset, wavs="", references=""):
         if "tinyllama" in pipe_param.model_name.lower() or "phi" in pipe_param.model_name.lower():
             try:
                 print(f"Loading \"{dataset}\" as dataset to be used")
@@ -155,8 +159,12 @@ class DatasetInteractor:
                 self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
                 self.dataset = self.dataset[self.dataset_subset]
         if "whisper" in pipe_param.model_name.lower():
-            self.dataset = load_dataset(dataset, subset, split='validation')
-            self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
+            if len(wavs) == 0 and len(references) == 0:
+                self.dataset = load_dataset(dataset, subset, split='validation')
+                self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
+            else: # work with local audio files
+                self.wavs = wavs
+                self.references = references
 
     def process_dataset_format(self, data):  # This is to standardize the format of the prompt list for report purpose
         progress_bar = tqdm(total=len(data), desc="Formatting dataset:")
@@ -168,7 +176,6 @@ class DatasetInteractor:
                 processed_data.append(prompt)
                 progress_bar.update(1)
             progress_bar.close()
-            return processed_data
         elif "librispeech" in pipe_param.dataset_name:
             for p in data:
                 prompt = {"file": p["file"], "audio": p["audio"],
@@ -178,10 +185,39 @@ class DatasetInteractor:
                 processed_data.append(prompt)
                 progress_bar.update(1)
             progress_bar.close()
-            return processed_data
+        elif "audio" in pipe_param.dataset_name:
+            if not hasattr(self, "wavs") or not hasattr(self, "references"):
+                print("No audio or reference path folder defined")
+                raise ValueError
+            else:
+                wavs = self.capture_wavs()
+                # capture references from txt file
+                with open(references, "r") as rfile:
+                    refs = []
+                    for r in rfile:
+                        refs.append(r)
+                
+                if len(wavs) != len(refs):
+                    len_wavs = len(wavs)
+                    len_refs = len(refs)
+                    print(f"There is a difference in the amount of audio files and references submited, please check the "\
+                            "correlation between both sizes: wavs>{len_wavs} refs>{len_refs}")
+                    raise
+                else:
+                    for r in refs:
+                        prompt = {"expected_response": refs[r], "audio": wavs[refs.index(r)]}
+                        processed_data.append(prompt())
+                        progress_bar.update(1)
+                    progress_bar.close()
+
         else:
             print(f"{self.dataset} is currently not recognized by the framework...")
             raise
+
+        return processed_data
+    
+    def capture_wavs(self, wav_folder):
+        pass
 
     def select_prompts_sample(self):
         # We filter the dataset to narrow the amount of prompts(selecting scores accordingly to
