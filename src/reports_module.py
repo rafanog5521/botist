@@ -35,7 +35,7 @@ class Reporter:
             result.write(content)
 
     def process_results(self, output, debug=False, data_type='questionnaire'):
-        print("\n\n\n*\tPreparing report folder")
+        print("\n*\tPreparing report folder")
         rep_folder = self.create_report_folder()
         if debug:
             print("\n*\tGenerating raw output...")
@@ -52,6 +52,8 @@ class Reporter:
                                 "Response time", rep_folder, debug)
         self.graphicate_results(range(1, len(tps) + 1), tps, "Question Num.", "# Tokens/sec", "Tokens per second", 
                                 rep_folder, debug)
+        self.graphicate_results(range(1, len(wer) + 1), wer, "lines", "WER", "Word error rate", 
+                                rep_folder, debug)
 
         print("\n*\tGenerating summary file...")
         summary = {
@@ -61,7 +63,7 @@ class Reporter:
             "num_prompts_used": len(output),
             "WER": wer,
             "average_resp_time": sum(response_time) / len(response_time),
-            "average_tokens_per_seccond": sum(tps) / len(tps)
+            "average_tokens_per_second": sum(tps) / len(tps)
         }
         self.dump_info(summary, "results_summary", rep_folder)
         print("\n*\tReports can be viewed at: {}".format(rep_folder))
@@ -103,6 +105,11 @@ class Reporter:
 
     def calculate_wer(self, reference_texts, model_outputs):
         print("\n*\tCalculating WER")
+        wer_windows = [100, 200, 250, 500, 1000, 2000, 2500, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000]
+        wer_values = []
+
+        array_length = len(model_outputs)
+
         transforms = jiwer.Compose([
             jiwer.ExpandCommonEnglishContractions(),
             jiwer.RemoveEmptyStrings(),
@@ -113,9 +120,17 @@ class Reporter:
             jiwer.ReduceToListOfListOfWords(),
         ])
 
-        wer = jiwer.wer(reference_texts, model_outputs,truth_transform=transforms,hypothesis_transform=transforms)
+        for w in wer_windows:
+            if w <= array_length:
+                wer_values.append(jiwer.wer(reference_texts[0:w], model_outputs[0:w],truth_transform=transforms,hypothesis_transform=transforms))
 
-        return wer
+        print("\n*\tWER:")
+        index = 0
+        for w in wer_values:
+            print("{}: {}".format(wer_windows[index], w))
+            index+=1
+
+        return wer_values
 
     def graphicate_results(self, x, y, x_desc, y_desc, title, file_path, display=False):
         print("\n*\tGenerating {} graphic".format(title))

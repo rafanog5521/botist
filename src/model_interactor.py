@@ -134,9 +134,13 @@ class WhisperModelInteractor:
         # decode token ids to text
         transcription = self.processor.batch_decode(predicted_ids, skip_special_tokens=True)
         #Format output
-        transcription.remove('<|startoftranscript|>')
-        transcription.remove('<|notimestamps|>')
-        transcription.remove('<|endoftext|>')
+        try: #This shouldn't be necessary with skip_special_tokens flag on
+            transcription.remove('<|startoftranscript|>')
+            transcription.remove('<|notimestamps|>')
+            transcription.remove('<|endoftext|>')
+        except:
+            pass
+
         readable_transcription = ','.join(map(str, transcription))
         readable_transcription = (re.sub(",", "", readable_transcription))
         if performance_metric:
@@ -163,7 +167,7 @@ class DatasetInteractor:
                 self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
                 self.dataset = self.dataset[self.dataset_subset]
         if "whisper" in pipe_param.model_name.lower():
-            self.dataset = load_dataset(dataset, subset, split='validation')
+            self.dataset = load_dataset(dataset, subset, split="train.360")
             self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
 
     def process_dataset_format(self, data):  # This is to standardize the format of the prompt list for report purpose
