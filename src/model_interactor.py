@@ -153,10 +153,10 @@ class DatasetInteractor:
     def __init__(self, dataset, subset):
         if "tinyllama" in pipe_param.model_name.lower() or "phi" in pipe_param.model_name.lower():
             try:
-                print(f"Loading \"{dataset}\" as dataset to be used")
+                print("Loading \"{}\" as dataset to be used".format(dataset))
                 self.dataset = load_dataset(dataset)
             except Exception as e:
-                print(f"Error loading dataset: {e}")
+                print("Error loading dataset: {}".format(e))
                 raise
             else:
                 self.dataset_name = dataset
@@ -187,13 +187,13 @@ class DatasetInteractor:
             progress_bar.close()
             return processed_data
         else:
-            print(f"{self.dataset} is currently not recognized by the framework...")
-            raise
+            print("{} is currently not recognized by the framework...".format(self.dataset))
+            assert False
 
     def select_prompts_sample(self):
         # We filter the dataset to narrow the amount of prompts(selecting scores accordingly to
         # what is defined in the parameters)
-        print(f"\n*\tSelecting randomized samples from \"{self.dataset_subset}\" subset")
+        print("\n*\tSelecting randomized samples from \"{}\" subset\n".format(self.dataset_subset))
         if "ultrafeedback_binarized" in pipe_param.dataset_name:
             filtered_dataset = self.dataset.filter(lambda example: example["score_chosen"] >= pipe_param.score_base)
         elif "librispeech" in pipe_param.dataset_name:

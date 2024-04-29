@@ -22,11 +22,11 @@ def measure_performance(input_text):
     total_tokens_generated = len(response.split())
     tokens_per_second = total_tokens_generated / response_time
 
-    print("Input text:", input_text)
-    print("Response from TinyLLAMA:", response)
-    print("Response time:", response_time, "seconds")
-    print("Tokens generated:", total_tokens_generated)
-    print("Tokens per second:", tokens_per_second)
+    print("Input text: {}".format(input_text))
+    print("Response from TinyLLAMA: {}".format(response))
+    print("Response time: {} seconds".format(response_time))
+    print("Tokens generated: {}".format(total_tokens_generated))
+    print("Tokens per second: {}".format(tokens_per_second))
 
 if __name__ == "__main__":
     # Example input text

@@ -16,17 +16,17 @@ class Reporter:
     def create_report_folder(self):
         new_folder = self.report_directory.replace("src", "reports")
         if not os.path.exists(new_folder):
-            print(f"Creating {new_folder} folder as it doesn't exists...")
+            print("Creating {} folder as it doesn't exists...".format(new_folder))
             os.mkdir(new_folder)
 
         date_string = "{}".format(datetime.today()).replace(":", "-").replace(".", "-")
         report_folder = new_folder + "/{}_log".format(date_string)
-        print(f"Creating report log here>>{report_folder}")
+        print("Creating report log here>>{}".format(report_folder))
         os.mkdir(report_folder)
         return report_folder
 
     def snapshot_file(self, file, rep_path):
-        print(f"Saving copy of {file}")
+        print("Saving copy of {}".format(file))
         with open(file, "rb") as file_to_snapshot:
             content = file_to_snapshot.read()
 
@@ -64,7 +64,7 @@ class Reporter:
             "average_tokens_per_seccond": sum(tps) / len(tps)
         }
         self.dump_info(summary, "results_summary", rep_folder)
-        print(f"\n*\tReports can be viewed at: {rep_folder}")
+        print("\n*\tReports can be viewed at: {}".format(rep_folder))
 
     def dump_info(self, output, name, path):
         with open(os.path.join(path, f"{name}.json"), "w") as file: # the as needs to be changed as it superseeds the dependency
@@ -118,7 +118,7 @@ class Reporter:
         return wer
 
     def graphicate_results(self, x, y, x_desc, y_desc, title, file_path, display=False):
-        print(f"\n*\tGenerating {title} graphic")
+        print("\n*\tGenerating {} graphic".format(title))
         _ , ax = plt.subplots()
         ax.plot(x, y, label="placeholder example")
         ax.set_title(title)
@@ -129,4 +129,4 @@ class Reporter:
             plt.show()
         graph_path = os.path.join(file_path, title + ".pdf") 
         plt.savefig(graph_path)
-        print(f"Saved {title} in {graph_path}")
+        print("Saved {} in {}".format(title,graph_path))
