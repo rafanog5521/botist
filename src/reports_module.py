@@ -34,22 +34,26 @@ class Reporter:
         with open(snapshot_path, "wb") as result:
             result.write(content)
 
-    def process_results(self, output, debug=False):
-        print("Preparing report folder")
+    def process_results(self, output, debug=False, data_type='questionnaire'):
+        print("\n\n\n*\tPreparing report folder")
         rep_folder = self.create_report_folder()
         if debug:
-            print("Generating raw output")
+            print("\n*\tGenerating raw output...")
             self.dump_info(output, "raw_results", rep_folder) # creates a raw copy of the results
         
-        expected, current, response_time, tps = self.process_questionnaire(output) # parse results
+        match data_type:
+            case 'questionnaire':        
+                expected, current, response_time, tps = self.process_questionnaire(output) # parse results
+            case 'transcription':
+                expected, current, response_time, tps = self.process_speech_transcription(output) # parse results
 
         wer = self.calculate_wer(expected, current)
-        self.graphicate_results(range(1, len(response_time) + 1), response_time, "Question Num.", "Time", 
+        self.graphicate_results(range(1, len(response_time) + 1), response_time, "Question Num.", "Time [msec]", 
                                 "Response time", rep_folder, debug)
-        self.graphicate_results(range(1, len(tps) + 1), tps, "Question Num.", "# Tokens/S", "Tokens per second", 
+        self.graphicate_results(range(1, len(tps) + 1), tps, "Question Num.", "# Tokens/sec", "Tokens per second", 
                                 rep_folder, debug)
 
-        print("Generating summary file")
+        print("\n*\tGenerating summary file...")
         summary = {
             "parameters": {
                 "model": self.params.model
@@ -60,7 +64,7 @@ class Reporter:
             "average_tokens_per_seccond": sum(tps) / len(tps)
         }
         self.dump_info(summary, "results_summary", rep_folder)
-        print(f"Reports can be viewed at: {rep_folder}")
+        print(f"\n*\tReports can be viewed at: {rep_folder}")
 
     def dump_info(self, output, name, path):
         with open(os.path.join(path, f"{name}.json"), "w") as file: # the as needs to be changed as it superseeds the dependency
@@ -80,9 +84,25 @@ class Reporter:
             progress_bar.update(1)
         progress_bar.close()
         return expected_responses, current_responses, responses_times, tokens_per_second
-        
+
+    def process_speech_transcription(self, output_list):
+        expected_responses = []
+        current_responses = []
+        responses_times = []
+        #tokens_per_second = []
+        tokens_per_second = [1.00, 1.00]
+        progress_bar = tqdm(total=len(output_list), desc="Parsing responses for reports:")
+        for r in output_list:
+            expected_responses.append(r["expected_response"])
+            current_responses.append(r["response"])
+            responses_times.append(r["response_time"])
+            #tokens_per_second.append(r["response"]["tokens_per_second"])
+            progress_bar.update(1)
+        progress_bar.close()
+        return expected_responses, current_responses, responses_times, tokens_per_second
+
     def calculate_wer(self, reference_texts, model_outputs):
-        print("Calculating WER")
+        print("\n*\tCalculating WER")
         transforms = jiwer.Compose([
             jiwer.ExpandCommonEnglishContractions(),
             jiwer.RemoveEmptyStrings(),
@@ -98,8 +118,8 @@ class Reporter:
         return wer
 
     def graphicate_results(self, x, y, x_desc, y_desc, title, file_path, display=False):
-        print(f"Generating {title} graphic")
-        fig, ax = plt.subplots()
+        print(f"\n*\tGenerating {title} graphic")
+        _ , ax = plt.subplots()
         ax.plot(x, y, label="placeholder example")
         ax.set_title(title)
         ax.set_xlabel(x_desc)

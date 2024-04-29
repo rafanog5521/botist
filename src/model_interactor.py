@@ -111,7 +111,7 @@ class WhisperModelInteractor:
     def map_to_pred(self, batch):
         audio = batch["audio"]
         input_features = self.processor(audio["array"], sampling_rate=audio["sampling_rate"], return_tensors="pt").input_features
-        batch["reference"] = self.processor.tokenizer._normalize(batch['text'])
+        batch["reference"] = self.processor.tokenizer._normalize(batch['content'])
 
         with torch.no_grad():
             predicted_ids = self.model.generate(input_features.to("cuda"))[0]
@@ -123,7 +123,9 @@ class WhisperModelInteractor:
         result = self.dataset_loaded.map(self.map_to_pred)
         return (result, load)
 
-    def transcription_of_speech(self, speech):
+    def transcription_of_speech(self, speech, performance_metric=True):
+        if performance_metric:
+            start_time = time.time()
         sample = speech["audio"]
         input_features = self.processor(sample["array"], sampling_rate=sample["sampling_rate"], return_tensors="pt").input_features
 
@@ -135,11 +137,17 @@ class WhisperModelInteractor:
         transcription.remove('<|startoftranscript|>')
         transcription.remove('<|notimestamps|>')
         transcription.remove('<|endoftext|>')
-        transcription[0] = transcription[0].strip()
-        transcription[-1] = transcription[-1].replace('\"','')
         readable_transcription = ','.join(map(str, transcription))
-        readable_transcription = (re.sub(",", "", readable_transcription)).capitalize()
-        return (readable_transcription, (speech["text"].capitalize())+".")
+        readable_transcription = (re.sub(",", "", readable_transcription))
+        if performance_metric:
+            end_time = time.time()
+            # Calculate response time
+            response_time = end_time - start_time
+            # # Calculate tokens per second
+            # total_tokens_generated = len(output[0]["generated_text"])
+            # tokens_per_second = total_tokens_generated / response_time
+
+        return (readable_transcription, (speech["content"]), response_time)
 
 class DatasetInteractor:
     def __init__(self, dataset, subset):
@@ -172,9 +180,8 @@ class DatasetInteractor:
         elif "librispeech" in pipe_param.dataset_name:
             for p in data:
                 prompt = {"file": p["file"], "audio": p["audio"],
-                          "text": p["text"], "speaker_id": p["speaker_id"],
-                          "chapter_id": p["chapter_id"], "id": p["id"], 
-                          "content": "", "expected_response": ""}
+                          "content": p["text"], "speaker_id": p["speaker_id"],
+                          "chapter_id": p["chapter_id"], "id": p["id"]}
                 processed_data.append(prompt)
                 progress_bar.update(1)
             progress_bar.close()
@@ -186,11 +193,11 @@ class DatasetInteractor:
     def select_prompts_sample(self):
         # We filter the dataset to narrow the amount of prompts(selecting scores accordingly to
         # what is defined in the parameters)
-        print(f"Selecting randomized samples from \"{self.dataset_subset}\" subset")
+        print(f"\n*\tSelecting randomized samples from \"{self.dataset_subset}\" subset")
         if "ultrafeedback_binarized" in pipe_param.dataset_name:
             filtered_dataset = self.dataset.filter(lambda example: example["score_chosen"] >= pipe_param.score_base)
         elif "librispeech" in pipe_param.dataset_name:
-            filtered_dataset = self.dataset.filter(lambda example: int(example["speaker_id"]) >= pipe_param.speaker_id)
+            filtered_dataset = self.dataset.filter(lambda example: example["speaker_id"] >= pipe_param.speaker_id)
         filtered_dataset = filtered_dataset.shuffle()  #shuffled to randomize it
         random_sample = filtered_dataset.select(range(pipe_param.num_prompts))
         return self.process_dataset_format(random_sample)
