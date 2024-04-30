@@ -91,21 +91,20 @@ class Reporter:
         expected_responses = []
         current_responses = []
         responses_times = []
-        #tokens_per_second = []
-        tokens_per_second = [1.00, 1.00]
+        tokens_per_second = []
         progress_bar = tqdm(total=len(output_list), desc="Parsing responses for reports:")
         for r in output_list:
             expected_responses.append(r["expected_response"])
             current_responses.append(r["response"])
             responses_times.append(r["response_time"])
-            #tokens_per_second.append(r["response"]["tokens_per_second"])
+            tokens_per_second.append(r["tokens_per_second"])
             progress_bar.update(1)
         progress_bar.close()
         return expected_responses, current_responses, responses_times, tokens_per_second
 
-    def calculate_wer(self, reference_texts, model_outputs):
+    def calculate_wer(self, reference_texts, model_outputs, debug=False):
         print("\n*\tCalculating WER")
-        wer_windows = [100, 200, 250, 500, 1000, 2000, 2500, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000]
+        wer_windows = [100, 200, 250, 500, 1000, 2000, 2500, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000, 20000, 50000, 100000]
         wer_values = []
 
         array_length = len(model_outputs)
@@ -120,15 +119,23 @@ class Reporter:
             jiwer.ReduceToListOfListOfWords(),
         ])
 
-        for w in wer_windows:
-            if w <= array_length:
-                wer_values.append(jiwer.wer(reference_texts[0:w], model_outputs[0:w],truth_transform=transforms,hypothesis_transform=transforms))
+        for index, w in enumerate(wer_windows):
+            if w < array_length:
+                lower_limit = w
+                w_next = wer_windows[index+1]
+                upper_limit = w_next
+                wer_values.append(jiwer.wer(reference_texts[lower_limit:upper_limit], model_outputs[lower_limit:upper_limit],truth_transform=transforms,hypothesis_transform=transforms))
 
-        print("\n*\tWER:")
-        index = 0
-        for w in wer_values:
-            print("{}: {}".format(wer_windows[index], w))
-            index+=1
+        # for w in wer_windows:
+        #     if w < array_length:
+        #         wer_values.append(jiwer.wer(reference_texts[0:w], model_outputs[0:w],truth_transform=transforms,hypothesis_transform=transforms))
+
+        if debug:
+            print("\n*\tWER:")
+            index = 0
+            for w in wer_values:
+                print("{}-{}: {}".format(wer_windows[index], wer_windows[index+1], w))
+                index+=1
 
         return wer_values
 

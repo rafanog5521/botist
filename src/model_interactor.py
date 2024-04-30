@@ -25,6 +25,7 @@ class TinyLlamaModelInteractor:
         transformers.logging.set_verbosity(transformers.logging.CRITICAL)  # disable base warnings
         self.dataset = self.tiny_param.dataset
         self.dataset_subset = self.tiny_param.dataset_subset
+        self.dataset_split = None
         torch.set_default_device("cuda")
 
     def prompt(self, question):
@@ -63,6 +64,7 @@ class PhiModelInteractor:
         self.tokenizer = AutoTokenizer.from_pretrained(pipe_param.model, trust_remote_code=self.phi_param.trust_remote_code)
         self.dataset = self.phi_param.dataset
         self.dataset_subset = self.phi_param.dataset_subset
+        self.dataset_split = None
         # self.device = torch.device("cuda:0")
         # self.model.cuda()
         # torch.set_default_device("cuda")
@@ -132,29 +134,22 @@ class WhisperModelInteractor:
         # generate token ids
         predicted_ids = self.model.generate(input_features.to("cuda"))[0]
         # decode token ids to text
-        transcription = self.processor.batch_decode(predicted_ids, skip_special_tokens=True)
+        transcription = self.processor.batch_decode(predicted_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
         #Format output
-        try: #This shouldn't be necessary with skip_special_tokens flag on
-            transcription.remove('<|startoftranscript|>')
-            transcription.remove('<|notimestamps|>')
-            transcription.remove('<|endoftext|>')
-        except:
-            pass
-
         readable_transcription = ','.join(map(str, transcription))
         readable_transcription = (re.sub(",", "", readable_transcription))
         if performance_metric:
             end_time = time.time()
             # Calculate response time
             response_time = end_time - start_time
-            # # Calculate tokens per second
-            # total_tokens_generated = len(output[0]["generated_text"])
-            # tokens_per_second = total_tokens_generated / response_time
+            # Calculate tokens per second
+            total_tokens_generated = len(predicted_ids)
+            tokens_per_second = total_tokens_generated / response_time
 
-        return (readable_transcription, (speech["content"]), response_time)
+        return (readable_transcription, (speech["content"]), response_time, tokens_per_second)
 
 class DatasetInteractor:
-    def __init__(self, dataset, subset):
+    def __init__(self, dataset, subset, subset_split):
         if "tinyllama" in pipe_param.model_name.lower() or "phi" in pipe_param.model_name.lower():
             try:
                 print("Loading \"{}\" as dataset to be used".format(dataset))
@@ -167,7 +162,7 @@ class DatasetInteractor:
                 self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
                 self.dataset = self.dataset[self.dataset_subset]
         if "whisper" in pipe_param.model_name.lower():
-            self.dataset = load_dataset(dataset, subset, split="train.360")
+            self.dataset = load_dataset(dataset, subset, split=subset_split)
             self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
 
     def process_dataset_format(self, data):  # This is to standardize the format of the prompt list for report purpose

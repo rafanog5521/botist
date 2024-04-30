@@ -83,15 +83,16 @@ if __name__ == "__main__":
 
         case 'transcription_of_speech':
             print("\n*\tStarting to test model {}\n".format(param.model_name))
-            data_interactor = DatasetInteractor(interactor.dataset, interactor.dataset_subset)
+            data_interactor = DatasetInteractor(interactor.dataset, interactor.dataset_subset, interactor.dataset_split)
             transcription_array = data_interactor.select_prompts_sample()  # to load the dataset to be used
             progress_bar = tqdm(total=len(transcription_array), desc="Processing prompts:")
             # Second we send the question to the model
             for s in transcription_array:
-                transcription, expected_response, response_time = interactor.transcription_of_speech(speech=s)
+                transcription, expected_response, response_time, tokens_per_second = interactor.transcription_of_speech(speech=s)
                 s.update({"response": transcription})
                 s.update({"expected_response": expected_response})
                 s.update({"response_time": response_time})
+                s.update({"tokens_per_second": tokens_per_second})
                 progress_bar.update(1)
             progress_bar.close()
 
