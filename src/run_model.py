@@ -7,6 +7,7 @@ from tqdm import tqdm
 import random
 
 if __name__ == "__main__":
+    # Parameter section
     parser = argparse.ArgumentParser(description='Run model')
     parser.add_argument('--init_only', help='Trigger a sample run to download requirements', required=False,
                         action=argparse.BooleanOptionalAction)
@@ -14,13 +15,13 @@ if __name__ == "__main__":
                         action=argparse.BooleanOptionalAction)
     args = vars(parser.parse_args())
 
-    #Check parameters
+    # Check parameters
     param = PipelineParams()
     print("\nUsing local model from ", param.model) if (param.local_model) else print("\nUsing remote model from ", param.model)
     print("Using local dataset from ", param.dataset) if (param.local_dataset) else print("Using remote dataset from ", param.dataset)
 
     #####
-    #Model instantiation
+    # Model instantiation
     if 'TinyLlama/TinyLlama-1.1B-Chat-v1.0' in param.model:
         interactor = TinyLlamaModelInteractor()
         test_type = "ask_question"
@@ -29,18 +30,18 @@ if __name__ == "__main__":
         test_type = "ask_question"
     elif 'open-ai/whisper' in param.model:
         interactor = WhisperModelInteractor()
-        test_type = "transcription_of_speech" #"speech_evaluation" #transcription_of_speech
+        test_type = "transcription_of_speech" # "speech_evaluation" #transcription_of_speech
     else:
         test_type = None
         raise ValueError(f"{param.model} is not currently recognized as a model")
     
     #####
-    #Condition to initiate model
+    # Condition to initiate model
     if args['init_only']:
         test_type = 'init_model'
 
     #####
-    #Start to test
+    # Start to test
     match test_type:
         case 'init_model':
             interactor.init_model()
