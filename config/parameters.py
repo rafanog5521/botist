@@ -5,7 +5,7 @@ import os, torch
 class PipelineParams:
     def __init__(self):
         #setup
-        self.model_name = "open-ai/whisper-small.en" # 'microsoft/phi-2' "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+        self.model_name = "openai/whisper-small.en" # 'microsoft/phi-2' "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
         # self.dataset_name = "hf-internal-testing/librispeech_asr_dummy" # "HuggingFaceH4/ultrafeedback_binarized"
         self.dataset_name = "local_audio"
 
@@ -72,11 +72,10 @@ class PhiParameters:
 class WhisperParameters:
     def __init__(self):
         param = PipelineParams()
-        if "local_audio" not in param.dataset_name:
-            self.dataset = param.dataset
-            self.dataset_subset = "clean"
-            self.dataset_split = "validation"
-        else:
+        self.dataset = param.dataset
+        self.dataset_subset = "clean"
+        self.dataset_split = "validation"
+        if "local_audio" in param.dataset_name:
             self.audio_folder = param.dataset
             self.reference_file = param.dataset + "/references.txt"
             print(f"References for test: {self.reference_file}")

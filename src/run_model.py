@@ -13,6 +13,7 @@ if __name__ == "__main__":
                         action=argparse.BooleanOptionalAction)
     parser.add_argument('-b', '--base_test', help='Base test using the questions.json file specified', required=False,
                         action=argparse.BooleanOptionalAction)
+    parser.add_argument('-v', '--verbose', help='Verbose mode', required=False, action=argparse.BooleanOptionalAction)
     args = vars(parser.parse_args())
 
     # Check parameters
@@ -28,7 +29,7 @@ if __name__ == "__main__":
     elif 'microsoft/phi-2' in param.model:
         interactor = PhiModelInteractor()
         test_type = "ask_question"
-    elif 'open-ai/whisper' in param.model:
+    elif 'openai/whisper' in param.model:
         interactor = WhisperModelInteractor()
         test_type = "transcription_of_speech" # "speech_evaluation" #transcription_of_speech
     else:
@@ -81,20 +82,22 @@ if __name__ == "__main__":
             print(100 * wer.compute(references=result["reference"], predictions=result["prediction"]))
 
         case 'transcription_of_speech':
-            data_interactor = DatasetInteractor(interactor.dataset, interactor.dataset_subset)
+            data_interactor = DatasetInteractor(interactor.dataset, interactor.dataset_subset, interactor.dataset_split)
             transcription_array = data_interactor.select_prompts_sample()  # to load the dataset to be used
             progress_bar = tqdm(total=len(transcription_array), desc="Processing prompts:")
             # Second we send the question to the model
             for s in transcription_array:
-                transcription, expected_response = interactor.transcription_of_speech(speech=s)
-                print("\n\n")
-                print("TRANSCRIPTION:")
-                print(transcription)
-                print("\nEXPECTED RESPONSE:")
-                print(expected_response)
-                print("\n")
+                # transcription, expected_response = interactor.transcription_of_speech(speech=s)
+                transcription = interactor.transcription_of_speech(speech=s)
+                if args["verbose"]:
+                    print("\n\n")
+                    print("TRANSCRIPTION:")
+                    print(transcription)
+                    print("\nEXPECTED RESPONSE:")
+                    print(s["expected_response"])
+                    print("\n")
                 s.update({"content": transcription})
-                s.update({"expected_response": expected_response})
+                s.update({"expected_response": s["expected_response"]})
                 progress_bar.update(1)
             progress_bar.close()
 
