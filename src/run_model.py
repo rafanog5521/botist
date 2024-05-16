@@ -18,8 +18,9 @@ if __name__ == "__main__":
 
     # Check parameters
     param = PipelineParams()
-    print("\nUsing local model from ", param.model) if (param.local_model) else print("\nUsing remote model from ", param.model)
-    print("Using local dataset from ", param.dataset) if (param.local_dataset) else print("Using remote dataset from ", param.dataset)
+    print("==========\n")
+    print("*\tUsing local model from {}".format(param.model)) if (param.local_model) else print("*\tUsing remote model from {}".format(param.model))
+    print("\n*\tUsing local dataset from {}".format(param.dataset)) if (param.local_dataset) else print("\n*\tUsing remote dataset from {}".format(param.dataset)) 
 
     #####
     # Model instantiation
@@ -49,6 +50,7 @@ if __name__ == "__main__":
 
         case 'ask_question':
             # First we define the dataset to be used(either local or in cloud or administered by the dataset library)
+            print("\n*\tStarting to test model {}\n".format(param.model_name))
             if args["base_test"]:
                 with open(param.questions_path, 'r') as file:
                     full_questionnaire = json.load(file)
@@ -82,6 +84,7 @@ if __name__ == "__main__":
             print(100 * wer.compute(references=result["reference"], predictions=result["prediction"]))
 
         case 'transcription_of_speech':
+            print("\n*\tStarting to test model {}\n".format(param.model_name))
             data_interactor = DatasetInteractor(interactor.dataset, interactor.dataset_subset, interactor.dataset_split)
             transcription_array = data_interactor.select_prompts_sample()  # to load the dataset to be used
             progress_bar = tqdm(total=len(transcription_array), desc="Processing prompts:")
@@ -101,6 +104,10 @@ if __name__ == "__main__":
                 progress_bar.update(1)
             progress_bar.close()
 
+            # Third we generate the reports
+            transcription_array = [{key: value for key, value in dict.items() if (key != 'file' and key != 'audio')} for dict in transcription_array] #Remove file and audio paths to not break dict parsing functions
+            Reporter(param).process_results(transcription_array, True, 'transcription')
+
         case None:
             print("What type of test do you want to run? Check configuration files")
-            raise
+            assert False

@@ -26,6 +26,7 @@ class TinyLlamaModelInteractor:
         transformers.logging.set_verbosity(transformers.logging.CRITICAL)  # disable base warnings
         self.dataset = self.tiny_param.dataset
         self.dataset_subset = self.tiny_param.dataset_subset
+        self.dataset_split = None
         torch.set_default_device("cuda")
 
     def prompt(self, question):
@@ -64,6 +65,7 @@ class PhiModelInteractor:
         self.tokenizer = AutoTokenizer.from_pretrained(pipe_param.model, trust_remote_code=self.phi_param.trust_remote_code)
         self.dataset = self.phi_param.dataset
         self.dataset_subset = self.phi_param.dataset_subset
+        self.dataset_split = None
         # self.device = torch.device("cuda:0")
         # self.model.cuda()
         # torch.set_default_device("cuda")
@@ -117,7 +119,7 @@ class WhisperModelInteractor:
     def map_to_pred(self, batch):
         audio = batch["audio"]
         input_features = self.processor(audio["array"], sampling_rate=audio["sampling_rate"], return_tensors="pt").input_features
-        batch["reference"] = self.processor.tokenizer._normalize(batch['text'])
+        batch["reference"] = self.processor.tokenizer._normalize(batch['content'])
 
         with torch.no_grad():
             predicted_ids = self.model.generate(input_features.to("cuda"))[0]
@@ -140,25 +142,28 @@ class WhisperModelInteractor:
         # generate token ids
         predicted_ids = self.model.generate(input_features.to("cuda"))[0]
         # decode token ids to text
-        transcription = self.processor.batch_decode(predicted_ids, skip_special_tokens=True)
+        transcription = self.processor.batch_decode(predicted_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
         #Format output
-        transcription.remove('<|startoftranscript|>')
-        transcription.remove('<|notimestamps|>')
-        transcription.remove('<|endoftext|>')
-        transcription[0] = transcription[0].strip()
-        transcription[-1] = transcription[-1].replace('\"','')
         readable_transcription = ','.join(map(str, transcription))
-        readable_transcription = (re.sub(",", "", readable_transcription)).capitalize()
-        return readable_transcription
+        readable_transcription = (re.sub(",", "", readable_transcription))
+        if performance_metric:
+            end_time = time.time()
+            # Calculate response time
+            response_time = end_time - start_time
+            # Calculate tokens per second
+            total_tokens_generated = len(predicted_ids)
+            tokens_per_second = total_tokens_generated / response_time
+
+        return (readable_transcription, (speech["content"]), response_time, tokens_per_second)
 
 class DatasetInteractor:
-    def __init__(self, dataset, dataset_subset, dataset_split):
+    def __init__(self, dataset, subset, subset_split):
         if "tinyllama" in pipe_param.model_name.lower() or "phi" in pipe_param.model_name.lower():
             try:
-                print(f"Loading \"{dataset}\" as dataset to be used")
+                print("Loading \"{}\" as dataset to be used".format(dataset))
                 self.dataset = load_dataset(dataset)
             except Exception as e:
-                print(f"Error loading dataset: {e}")
+                print("Error loading dataset: {}".format(e))
                 raise
             else:
                 self.dataset_name = dataset
@@ -184,9 +189,8 @@ class DatasetInteractor:
         elif "librispeech" in pipe_param.dataset_name:
             for p in data:
                 prompt = {"file": p["file"], "audio": p["audio"],
-                          "text": p["text"], "speaker_id": p["speaker_id"],
-                          "chapter_id": p["chapter_id"], "id": p["id"], 
-                          "content": "", "expected_response": ""}
+                          "content": p["text"], "speaker_id": p["speaker_id"],
+                          "chapter_id": p["chapter_id"], "id": p["id"]}
                 processed_data.append(prompt)
                 progress_bar.update(1)
             progress_bar.close()
@@ -198,8 +202,8 @@ class DatasetInteractor:
             progress_bar.close()
 
         else:
-            print(f"{self.dataset} is currently not recognized by the framework...")
-            raise
+            print("{} is currently not recognized by the framework...".format(self.dataset))
+            assert False
 
         return processed_data
     

@@ -12,9 +12,9 @@ class PipelineParams:
         self.task = "text-generation"
         self.torch_dtype = torch.bfloat16
         self.device_map = "auto"
-        self.num_prompts = 10
+        self.num_prompts = 6000
         self.score_base = 9
-        self.speaker_id = 1000
+        self.speaker_id = 10
 
         #paths
         self.current_dir = os.path.dirname(os.path.realpath(__file__))
