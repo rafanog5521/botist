@@ -12,7 +12,7 @@ class PipelineParams:
         self.task = "text-generation"
         self.torch_dtype = torch.bfloat16
         self.device_map = "auto"
-        self.num_prompts = 6000
+        self.num_prompts = 2000
         self.score_base = 9
         self.speaker_id = 10
 
@@ -78,4 +78,4 @@ class WhisperParameters:
         if "local_audio" in param.dataset_name:
             self.audio_folder = param.dataset
             self.reference_file = param.dataset + "/references.txt"
-            print(f"References for test: {self.reference_file}")
+            print(f"\n*\tReferences for test: {self.reference_file}")

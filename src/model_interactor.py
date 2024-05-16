@@ -131,7 +131,9 @@ class WhisperModelInteractor:
         result = self.dataset_loaded.map(self.map_to_pred)
         return (result, load)
 
-    def transcription_of_speech(self, speech):
+    def transcription_of_speech(self, speech, performance_metric=True):
+        if performance_metric:
+            start_time = time.time()
         if not hasattr(self, 'audio_folder') and not hasattr(self, 'references_folder'):
             sample = speech["audio"]
             input_features = self.processor(sample["array"], sampling_rate=sample["sampling_rate"], return_tensors="pt").input_features
@@ -148,13 +150,12 @@ class WhisperModelInteractor:
         readable_transcription = (re.sub(",", "", readable_transcription))
         if performance_metric:
             end_time = time.time()
-            # Calculate response time
-            response_time = end_time - start_time
-            # Calculate tokens per second
-            total_tokens_generated = len(predicted_ids)
+            response_time = end_time - start_time # Calculate response time
+            total_tokens_generated = len(predicted_ids) # Calculate tokens per second
             tokens_per_second = total_tokens_generated / response_time
-
-        return (readable_transcription, (speech["content"]), response_time, tokens_per_second)
+        
+        readable_transcription = readable_transcription.replace("<|startoftranscript|><|notimestamps|>", "").replace("<|endoftext|>", "")
+        return {"current_response": readable_transcription, "response_time": response_time, "tokens_per_seccond": tokens_per_second}
 
 class DatasetInteractor:
     def __init__(self, dataset, subset, subset_split):
@@ -237,7 +238,6 @@ class DatasetInteractor:
             print("Error processing the dataset sample")
             raise ValueError
         
-        print(f"num_samples: {pipe_param.num_prompts}")
         selected_sample = filtered_dataset[:pipe_param.num_prompts]
         if "local_audio" in pipe_param.dataset_name:
             return selected_sample

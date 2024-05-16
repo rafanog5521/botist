@@ -50,7 +50,6 @@ if __name__ == "__main__":
 
         case 'ask_question':
             # First we define the dataset to be used(either local or in cloud or administered by the dataset library)
-            print("\n*\tStarting to test model {}\n".format(param.model_name))
             if args["base_test"]:
                 with open(param.questions_path, 'r') as file:
                     full_questionnaire = json.load(file)
@@ -84,13 +83,11 @@ if __name__ == "__main__":
             print(100 * wer.compute(references=result["reference"], predictions=result["prediction"]))
 
         case 'transcription_of_speech':
-            print("\n*\tStarting to test model {}\n".format(param.model_name))
             data_interactor = DatasetInteractor(interactor.dataset, interactor.dataset_subset, interactor.dataset_split)
             transcription_array = data_interactor.select_prompts_sample()  # to load the dataset to be used
             progress_bar = tqdm(total=len(transcription_array), desc="Processing prompts:")
             # Second we send the question to the model
             for s in transcription_array:
-                # transcription, expected_response = interactor.transcription_of_speech(speech=s)
                 transcription = interactor.transcription_of_speech(speech=s)
                 if args["verbose"]:
                     print("\n\n")
@@ -99,11 +96,14 @@ if __name__ == "__main__":
                     print("\nEXPECTED RESPONSE:")
                     print(s["expected_response"])
                     print("\n")
-                s.update({"content": transcription})
-                s.update({"expected_response": s["expected_response"]})
+                s.update({"response": transcription["current_response"]})
+                s.update({"response_time": transcription["response_time"]})
+                s.update({"tokens_per_second": transcription["tokens_per_seccond"]})
+                # s.update({"expected_response": s["expected_response"]})
                 progress_bar.update(1)
             progress_bar.close()
 
+            print(transcription_array)
             # Third we generate the reports
             transcription_array = [{key: value for key, value in dict.items() if (key != 'file' and key != 'audio')} for dict in transcription_array] #Remove file and audio paths to not break dict parsing functions
             Reporter(param).process_results(transcription_array, True, 'transcription')
