@@ -68,7 +68,6 @@ class Reporter:
         self.dump_info(summary, "results_summary", rep_folder)
         print("\n*\tReports can be viewed at: {}".format(rep_folder))
 
-
     def dump_info(self, output, name, path):
         with open(os.path.join(path, f"{name}.json"), "w") as file: # the as needs to be changed as it superseeds the dependency
             json.dump(output, file, indent=4)
