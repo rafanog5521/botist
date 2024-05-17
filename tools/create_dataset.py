@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 #Example of usage:
-#./tools/create_dataset.py --input_path /root/botist/dataset/custom/wer_calculated_6k.json --dataset_name librispeech_asr --dataset_subset clean --dataset_split train.360
+#./tools/create_dataset.py --input_path /root/botist/datasets/custom/wer_calculated_6k.json --dataset_name librispeech_asr --dataset_subset clean --dataset_split train.360
 import json, argparse
 from datasets import load_dataset
 
 parser = argparse.ArgumentParser(description='Run model')
-parser.add_argument('--input_path', help='Where is located the json file to convert?', default="/root/botist/dataset/custom/wer_calculated_output_6k", required=True, type=str)
+parser.add_argument('--input_path', help='Where is located the json file to convert?', default="/root/botist/datasets/custom/wer_calculated_output_6k", required=True, type=str)
 parser.add_argument('--dataset_name', help='Dataset to be filtered', required=True, type=str)
 parser.add_argument('--dataset_subset', help='Subset of the dataset', required=True, type=str)
 parser.add_argument('--dataset_split', help='Split of the dataset', required=True, type=str)
