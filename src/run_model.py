@@ -100,6 +100,7 @@ if __name__ == "__main__":
                 s.update({"response_time": transcription["response_time"]})
                 s.update({"tokens_per_second": transcription["tokens_per_seccond"]})
                 # s.update({"expected_response": s["expected_response"]})
+                s.update({"WER": Reporter(param).calculate_wer_per_line(reference_texts=s["expected_response"], model_outputs=transcription)})
                 progress_bar.update(1)
             progress_bar.close()
 
