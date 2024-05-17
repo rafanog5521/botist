@@ -24,4 +24,5 @@ dataset = load_dataset(args["dataset_name"], args["dataset_subset"], split=args[
 #Filter by IDs
 filtered_dataset = dataset.filter(lambda ds: ds['id'] in filtered_ids)
 print(filtered_dataset)
-dataset.save_to_disk(args["output_path"])
+filtered_dataset.save_to_disk(args["output_path"])
+print("Saved dataset on: ", args['output_path'])
