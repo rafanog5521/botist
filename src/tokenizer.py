@@ -2,6 +2,8 @@
 from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 from datasets import load_dataset
 from reports_module import Reporter
+from tqdm import tqdm
+import json
 import torch
 import argparse
 import librosa
@@ -15,18 +17,13 @@ def load_audio(audio_path):
     return audio
 
 def get_tokens_from_audio(audio_path):
-    # Cargar el archivo de audio
     audio = load_audio(audio_path)
-
-    # Tokenizar el audio
     input_values = processor(audio, return_tensors="pt", padding="longest", sampling_rate=16000).input_values  # Tamaño de batch 1
 
-    # Obtener los logits del modelo
     with torch.no_grad():
         logits = model(input_values).logits
-
-    # Obtener los IDs de los tokens predichos
-    predicted_ids = torch.argmax(logits, dim=-1)
+    
+    predicted_ids = torch.argmax(logits, dim=-1) # Obtener los IDs de los tokens predichos
 
     return predicted_ids
 
@@ -35,8 +32,7 @@ def main():
     parser.add_argument("-d", "--dataset", type=str, required=True, help="Name of the dataset to load")
     parser.add_argument("-s", "--subset", type=str, required=True, help="Subset of the dataset to load")
     parser.add_argument("-p", "--split", type=str, required=True, help="Split of the dataset to load (e.g., train, validation, test)")
-    parser.add_argument("-e", "--examples", type=int, required=False, help="")
-    parser.add_argument("-n", "--num_proc", type=int, required=False, help="Split the download work to speed up the dataset processing")
+    parser.add_argument("-v", "--verbose", type=bool, default=False, required=False, help="Verbose mode")
     # parser.add_argument("-o", "--output", type=str, required=True, help="Output JSONL file path")
     args = parser.parse_args()
 
@@ -47,12 +43,21 @@ def main():
 
     print(f"\t * Workin with {MODEL} to tokenize...")
     ds = load_dataset(args.dataset, args.subset, split=args.split, trust_remote_code=True)
+    progress_bar = tqdm(total=len(ds), desc="Generating tokens:")
+    token_list = []
     for d in ds:
         e_text = d["text"]
-        print(f"\n\t* Text from example: >> {e_text}")
         audio_path = d["audio"]["path"]
         tokens = get_tokens_from_audio(audio_path)
-        print(tokens)
+        token_list.append(json.dumps(tokens.numpy().tolist()))
+        progress_bar.update(1)
+        if args.verbose:
+            print(f"\n* Text from example: >> {e_text}")
+            print(tokens)
+
+    progress_bar.close()
+    rep = Reporter(args)
+    rep.dump_info(token_list, "tokenized_output", rep.create_report_folder())
 
 
 if __name__ == "__main__":
