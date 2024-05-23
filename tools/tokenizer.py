@@ -1,7 +1,6 @@
-
 from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 from datasets import load_dataset
-from reports_module import Reporter
+from src.reports_module import Reporter
 from tqdm import tqdm
 import json
 import torch
@@ -28,12 +27,11 @@ def get_tokens_from_audio(audio_path):
     return predicted_ids
 
 def main():
-    parser = argparse.ArgumentParser(description="Tokenize audio dataset using Wav2Vec2")
+    parser = argparse.ArgumentParser(description=f"Tool to tokenize audio dataset using {MODEL}")
     parser.add_argument("-d", "--dataset", type=str, required=True, help="Name of the dataset to load")
     parser.add_argument("-s", "--subset", type=str, required=True, help="Subset of the dataset to load")
     parser.add_argument("-p", "--split", type=str, required=True, help="Split of the dataset to load (e.g., train, validation, test)")
-    parser.add_argument("-v", "--verbose", type=bool, default=False, required=False, help="Verbose mode")
-    # parser.add_argument("-o", "--output", type=str, required=True, help="Output JSONL file path")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
     args = parser.parse_args()
 
     global processor  # Make processor global so it can be accessed in subprocesses
@@ -41,19 +39,23 @@ def main():
     global model
     model = Wav2Vec2ForCTC.from_pretrained(MODEL)
 
-    print(f"\t * Workin with {MODEL} to tokenize...")
     ds = load_dataset(args.dataset, args.subset, split=args.split, trust_remote_code=True)
+    print(f"\n* Workin with {MODEL} to tokenize...")
     progress_bar = tqdm(total=len(ds), desc="Generating tokens:")
     token_list = []
     for d in ds:
         e_text = d["text"]
         audio_path = d["audio"]["path"]
         tokens = get_tokens_from_audio(audio_path)
-        token_list.append(json.dumps(tokens.numpy().tolist()))
+        raw_tokens = json.dumps(tokens[0].numpy().tolist())
+        json_entry = {
+            "text": e_text,
+            d["id"]: raw_tokens
+        }
+        token_list.append(json_entry)
         progress_bar.update(1)
         if args.verbose:
-            print(f"\n* Text from example: >> {e_text}")
-            print(tokens)
+            print(f"\n{json_entry}")
 
     progress_bar.close()
     rep = Reporter(args)
