@@ -12,15 +12,7 @@ class PipelineParams:
         self.task = "text-generation"
         self.torch_dtype = torch.bfloat16
         self.device_map = "auto"
-<<<<<<< HEAD
-<<<<<<< HEAD
         self.num_prompts = 2000
-=======
-        self.num_prompts = 100
->>>>>>> c9b4a54 (Adding support to generate the raw_results.json with WER measurement on each line.)
-=======
-        self.num_prompts = 6000
->>>>>>> cc4e230 (Cleanup)
         self.score_base = 9
         self.speaker_id = 10
 
