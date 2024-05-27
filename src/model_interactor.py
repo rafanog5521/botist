@@ -154,8 +154,9 @@ class WhisperModelInteractor:
             total_tokens_generated = len(predicted_ids) # Calculate tokens per second
             tokens_per_second = total_tokens_generated / response_time
         
+        expected_response = (speech["content"])
         readable_transcription = readable_transcription.replace("<|startoftranscript|><|notimestamps|>", "").replace("<|endoftext|>", "")
-        return {"current_response": readable_transcription, "response_time": response_time, "tokens_per_seccond": tokens_per_second}
+        return {"current_response": readable_transcription, "expected_response": expected_response, "response_time": response_time, "tokens_per_sec": tokens_per_second}
 
 class DatasetInteractor:
     def __init__(self, dataset, subset, subset_split):
@@ -172,7 +173,7 @@ class DatasetInteractor:
                 self.dataset = self.dataset[self.dataset_subset]
         if "whisper" in pipe_param.model_name.lower():
             if "local_audio" not in pipe_param.dataset_name:
-                self.dataset = load_dataset(dataset, dataset_subset, dataset_split)
+                self.dataset = load_dataset(dataset, subset, split=subset_split)
                 self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
             else:
                 self.dataset_path = dataset
@@ -220,7 +221,7 @@ class DatasetInteractor:
         if "ultrafeedback_binarized" in pipe_param.dataset_name:
             filtered_dataset = self.dataset.filter(lambda example: example["score_chosen"] >= pipe_param.score_base)
         elif "librispeech" in pipe_param.dataset_name:
-            filtered_dataset = self.dataset.filter(lambda example: int(example["speaker_id"]) >= pipe_param.speaker_id)
+            filtered_dataset = self.dataset.filter(lambda example: example["speaker_id"] >= pipe_param.speaker_id)
         elif "local_audio" in pipe_param.dataset_name:
             wavs = self.capture_wavs()
             with open(os.path.join(self.dataset_path, "references.txt"), "r") as rfile:
@@ -237,9 +238,11 @@ class DatasetInteractor:
         else:
             print("Error processing the dataset sample")
             raise ValueError
-        
-        selected_sample = filtered_dataset[:pipe_param.num_prompts]
+
         if "local_audio" in pipe_param.dataset_name:
+            selected_sample = filtered_dataset[:pipe_param.num_prompts]
             return selected_sample
         else:
-            return self.process_dataset_format(selected_sample)
+            filtered_dataset = filtered_dataset.shuffle()  #shuffled to randomize it
+            random_sample = filtered_dataset.select(range(pipe_param.num_prompts))
+            return self.process_dataset_format(random_sample)

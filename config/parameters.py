@@ -6,7 +6,7 @@ class PipelineParams:
     def __init__(self):
         #setup
         self.model_name = "openai/whisper-small.en" # 'microsoft/phi-2' "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
-        # self.dataset_name = "hf-internal-testing/librispeech_asr_dummy" # "HuggingFaceH4/ultrafeedback_binarized"
+        #self.dataset_name = "librispeech_asr" # "HuggingFaceH4/ultrafeedback_binarized"
         self.dataset_name = "local_audio"
 
         self.task = "text-generation"
