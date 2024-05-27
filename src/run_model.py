@@ -94,13 +94,12 @@ if __name__ == "__main__":
                     print("TRANSCRIPTION:")
                     print(transcription["current_response"])
                     print("\nEXPECTED RESPONSE:")
-                    print(transcription["expected_response"])
+                    print(s["expected_response"])
                     print("\n")
                 s.update({"response": transcription["current_response"]})
                 s.update({"response_time": transcription["response_time"]})
                 s.update({"tokens_per_second": transcription["tokens_per_sec"]})
-                s.update({"expected_response": transcription["expected_response"]})
-                s.update({"WER": Reporter(param).calculate_wer_per_line(transcription["expected_response"],
+                s.update({"WER": Reporter(param).calculate_wer_per_line(s["expected_response"],
                                                                         transcription["current_response"])})
                 progress_bar.update(1)
             progress_bar.close()

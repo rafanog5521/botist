@@ -153,10 +153,9 @@ class WhisperModelInteractor:
             response_time = end_time - start_time # Calculate response time
             total_tokens_generated = len(predicted_ids) # Calculate tokens per second
             tokens_per_second = total_tokens_generated / response_time
-        
-        expected_response = (speech["content"])
+
         readable_transcription = readable_transcription.replace("<|startoftranscript|><|notimestamps|>", "").replace("<|endoftext|>", "")
-        return {"current_response": readable_transcription, "expected_response": expected_response, "response_time": response_time, "tokens_per_sec": tokens_per_second}
+        return {"current_response": readable_transcription, "response_time": response_time, "tokens_per_sec": tokens_per_second}
 
 class DatasetInteractor:
     def __init__(self, dataset, subset, subset_split):
@@ -191,7 +190,7 @@ class DatasetInteractor:
         elif "librispeech" in pipe_param.dataset_name:
             for p in data:
                 prompt = {"file": p["file"], "audio": p["audio"],
-                          "content": p["text"], "speaker_id": p["speaker_id"],
+                          "expected_response": p["text"], "speaker_id": p["speaker_id"],
                           "chapter_id": p["chapter_id"], "id": p["id"]}
                 processed_data.append(prompt)
                 progress_bar.update(1)
