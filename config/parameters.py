@@ -5,13 +5,14 @@ import os, torch
 class PipelineParams:
     def __init__(self):
         #setup
-        self.model_name = "open-ai/whisper-small.en" # 'microsoft/phi-2' "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
-        self.dataset_name = "librispeech_asr" # "HuggingFaceH4/ultrafeedback_binarized"
+        self.model_name = "openai/whisper-small.en" # 'microsoft/phi-2' "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+        # self.dataset_name = "hf-internal-testing/librispeech_asr_dummy" # "HuggingFaceH4/ultrafeedback_binarized"
+        self.dataset_name = "local_audio"
 
         self.task = "text-generation"
         self.torch_dtype = torch.bfloat16
         self.device_map = "auto"
-        self.num_prompts = 6000
+        self.num_prompts = 2000
         self.score_base = 9
         self.speaker_id = 10
 
@@ -73,4 +74,8 @@ class WhisperParameters:
         param = PipelineParams()
         self.dataset = param.dataset
         self.dataset_subset = "clean"
-        self.dataset_split = "train.360"
+        self.dataset_split = "validation"
+        if "local_audio" in param.dataset_name:
+            self.audio_folder = param.dataset
+            self.reference_file = param.dataset + "/references.txt"
+            print(f"\n*\tReferences for test: {self.reference_file}")

@@ -108,7 +108,6 @@ class Reporter:
         wer_values = []
 
         array_length = len(model_outputs)
-
         transforms = jiwer.Compose([
             jiwer.ExpandCommonEnglishContractions(),
             jiwer.RemoveEmptyStrings(),
