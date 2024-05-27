@@ -102,7 +102,7 @@ class Reporter:
         progress_bar.close()
         return expected_responses, current_responses, responses_times, tokens_per_second
 
-    def calculate_wer(self, reference_texts, model_outputs, debug=False):
+    def calculate_wer(self, reference_texts, model_outputs):
         print("\n*\tCalculating WER")
         wer_windows = [100, 200, 250, 500, 1000, 2000, 2500, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000, 20000, 50000, 100000]
         wer_values = []
@@ -125,18 +125,19 @@ class Reporter:
                 upper_limit = w_next
                 wer_values.append(jiwer.wer(reference_texts[lower_limit:upper_limit], model_outputs[lower_limit:upper_limit],truth_transform=transforms,hypothesis_transform=transforms))
 
-        # for w in wer_windows:
-        #     if w < array_length:
-        #         wer_values.append(jiwer.wer(reference_texts[0:w], model_outputs[0:w],truth_transform=transforms,hypothesis_transform=transforms))
-
-        if debug:
-            print("\n*\tWER:")
-            index = 0
-            for w in wer_values:
-                print("{}-{}: {}".format(wer_windows[index], wer_windows[index+1], w))
-                index+=1
-
         return wer_values
+
+    def calculate_wer_per_line(self, reference_text, model_output):
+        transforms = jiwer.Compose([
+            jiwer.ExpandCommonEnglishContractions(),
+            jiwer.RemoveEmptyStrings(),
+            jiwer.ToLowerCase(),
+            jiwer.RemoveMultipleSpaces(),
+            jiwer.Strip(),
+            jiwer.RemovePunctuation(),
+            jiwer.ReduceToListOfListOfWords(),
+        ])
+        return jiwer.wer(reference_text, model_output, truth_transform=transforms, hypothesis_transform=transforms)
 
     def graphicate_results(self, x, y, x_desc, y_desc, title, file_path, display=False):
         print("\n*\tGenerating {} graphic".format(title))
