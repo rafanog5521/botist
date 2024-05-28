@@ -13,7 +13,7 @@ import soundfile as sf
 
 MODEL = "facebook/wav2vec2-base-960h"
 SAMPLING_RATE = 16000
-EXTRACTED_PATH_FRACTION = "/Librispeech/train-clean-360" # this is to cover the difference between the theoretical path and actual path after extraction
+EXTRACTED_PATH_FRACTION = "/LibriSpeech/dev-clean/" # this is to cover the difference between the theoretical path and actual path after extraction
 
 def load_audio(audio_path):
     try:
@@ -37,26 +37,30 @@ def load_audio(audio_path):
                 logging.error(f"soundfile also failed to load {audio_path} with error: {e}")
                 raise
 
-def get_tokens_from_audio(audio_path):
-    audio = load_audio(audio_path)
+def get_tokens_from_audio(audio_info, load_audio=False):
+    if load_audio:
+        audio = load_audio(audio_info)
+    else:
+        audio = audio_info
     input_values = processor(audio, return_tensors="pt", padding="longest", sampling_rate=SAMPLING_RATE).input_values.to(device)
     with torch.no_grad():
         logits = model(input_values).logits
-
     predicted_ids = torch.argmax(logits, dim=-1)
-
     return predicted_ids
 
-def process_entry(entry):
+def process_entry(entry, args):
     results = []
     try:
         if not all(key in entry for key in ["text", "audio"]):
             raise KeyError(f"Missing keys in entry: {entry}")
         ## this next snippet need to be implemented due to a recent change in the structure how the dataset is extracted
-        audio_path = entry["audio"]["path"]
-        entry_id_path = EXTRACTED_PATH_FRACTION + str(entry["speaker_id"]) + "/" + str(entry["chapter_id"])
-        audio_path = audio_path[:audio_path.rfind("/")] + entry_id_path + audio_path[audio_path.rfind("/"):]
-        tokens = get_tokens_from_audio(audio_path)
+        if args.load_audio:
+            audio_path = entry["audio"]["path"]
+            entry_id_path = EXTRACTED_PATH_FRACTION + str(entry["speaker_id"]) + "/" + str(entry["chapter_id"])
+            audio_info = audio_path[:audio_path.rfind("/")] + entry_id_path + audio_path[audio_path.rfind("/"):]
+        else:
+            audio_info = entry["audio"]["array"]
+        tokens = get_tokens_from_audio(audio_info)
         raw_tokens = tokens[0].cpu().numpy().tolist()
         json_entry = {
             entry["id"]: raw_tokens
@@ -80,7 +84,7 @@ def process_ds(args, ds):
         batch_entries = [dict(zip(batch.keys(), values)) for values in zip(*batch.values())]
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
-            futures = [executor.submit(process_entry, entry) for entry in batch_entries]
+            futures = [executor.submit(process_entry, entry, args) for entry in batch_entries]
             for future in concurrent.futures.as_completed(futures):
                 try:
                     json_entries = future.result()
@@ -103,20 +107,20 @@ def main():
     parser.add_argument("-s", "--subset", type=str, required=True, help="Subset of the dataset to load")
     parser.add_argument("-p", "--split", type=str, required=True, help="Split of the dataset to load (e.g., train, validation, test)")
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
+    parser.add_argument("-l", "--load-audio", action="store_true", help="Indicates to work from the audio file instead of the array")
     parser.add_argument("-t", "--threads", type=int, default=4, help="Number of threads to use for parallel processing")
     parser.add_argument("--batch_size", type=int, default=10, help="Batch size for processing")
     args = parser.parse_args()
 
     global processor
-    processor = Wav2Vec2Processor.from_pretrained(MODEL)
+    processor = Wav2Vec2Processor.from_pretrained(MODEL, ignore_mismatched_sizes=True)
     global model
-    model = Wav2Vec2ForCTC.from_pretrained(MODEL)
+    model = Wav2Vec2ForCTC.from_pretrained(MODEL, ignore_mismatched_sizes=True)
     global device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
     ds = load_dataset(args.dataset, args.subset, split=args.split, trust_remote_code=True)
-    ds_path = ds[0]["file"].split("/")[8]
     
     print(f"\n* Working with {MODEL} to tokenize...")
 
