@@ -159,7 +159,7 @@ class WhisperModelInteractor:
 
 class DatasetInteractor():
     def __init__(self, dataset, subset, subset_split):
-        print("Loading \"{}\" as dataset to be used".format(dataset))
+        print("\n*\tLoading dataset...")
         if "local_audio" not in pipe_param.dataset_name:
             try:
                 self.dataset = load_dataset(dataset, subset, split=subset_split)

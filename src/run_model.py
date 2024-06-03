@@ -20,11 +20,11 @@ if __name__ == "__main__":
     param = PipelineParams()
     print("==========\n")
     print("*\tUsing local model from {}".format(param.model)) if (param.local_model) else print("*\tUsing remote model from {}".format(param.model))
-    print("\n*\tUsing local dataset from {}".format(param.dataset)) if (param.local_dataset) else print("\n*\tUsing remote dataset from {}".format(param.dataset)) 
+    print("\n*\tUsing local dataset from {}\n".format(param.dataset)) if (param.local_dataset) else print("\n*\tUsing remote dataset from {}\n".format(param.dataset)) 
 
     #####
     # Model instantiation
-    if 'TinyLlama/TinyLlama-1.1B-Chat-v1.0' in param.model:
+    if 'TinyLlama/TinyLlama' in param.model:
         interactor = TinyLlamaModelInteractor()
         test_type = "ask_question"
     elif 'microsoft/phi-2' in param.model:
