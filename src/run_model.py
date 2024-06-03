@@ -62,7 +62,7 @@ if __name__ == "__main__":
                 if not hasattr(interactor, "dataset") or not hasattr(interactor, "dataset_subset"):
                     raise ValueError("No dataset or subset specified.")
                 else:
-                    data_interactor = DatasetInteractor(interactor.dataset, interactor.dataset_subset)
+                    data_interactor = DatasetInteractor(interactor.dataset, interactor.dataset_subset, interactor.dataset_split)
                     questionnaire = data_interactor.select_prompts_sample()  # to load the dataset to be used
 
             progress_bar = tqdm(total=len(questionnaire), desc="Processing prompts:")
