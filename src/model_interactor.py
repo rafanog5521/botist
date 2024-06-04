@@ -212,11 +212,11 @@ class DatasetInteractor():
     def select_prompts_sample(self):
         # We filter the dataset to narrow the amount of prompts(selecting scores accordingly to
         # what is defined in the parameters)
-        if "ultrafeedback_binarized" in self.dataset_name:
+        if "ultrafeedback_binarized" in pipe_param.dataset_name:
             filtered_dataset = self.dataset
-        elif "librispeech" in self.dataset_name:
+        elif "librispeech" in pipe_param.dataset_name:
             filtered_dataset = self.dataset
-        elif "local_audio" in self.dataset_name:
+        elif "local_audio" in pipe_param.dataset_name:
             wavs = self.capture_wavs()
             with open(os.path.join(self.dataset_path, "references.txt"), "r") as rfile:
                 refs = []
@@ -233,7 +233,7 @@ class DatasetInteractor():
             print("Error processing the dataset sample")
             raise ValueError
 
-        if "local_audio" in self.dataset_name:
+        if "local_audio" in pipe_param.dataset_name:
             selected_sample = filtered_dataset[:pipe_param.num_prompts]
             return selected_sample
         else:
