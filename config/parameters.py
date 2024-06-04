@@ -5,9 +5,13 @@ import os, torch
 class PipelineParams:
     def __init__(self):
         #setup
+        #model
         self.model_name = "openai/whisper-small.en" # 'microsoft/phi-2' "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+        #dataset
         #self.dataset_name = "librispeech_asr" # "HuggingFaceH4/ultrafeedback_binarized"
         self.dataset_name = "local_audio"
+        self.dataset_subset = ""
+        self.dataset_split = ""
 
         self.task = "text-generation"
         self.torch_dtype = torch.bfloat16
@@ -47,12 +51,12 @@ class PipelineParams:
 class TinyLlamaParameters:
     def __init__(self):
         param = PipelineParams()
+        self.dataset = param.dataset
+        self.dataset_subset = param.dataset_subset
+        self.dataset_split = param.dataset_split
         self.tokenize = False
         self.add_generation_prompt = True
         self.num_return_sequences = 1  # this is the key value to control the amount of possible responses obtained
-        self.model = param.model
-        self.dataset = param.dataset
-        self.dataset_subset = "train_prefs"
         # interaction values
         self.max_new_tokens = 1024
         self.do_sample = True
@@ -63,18 +67,19 @@ class TinyLlamaParameters:
 class PhiParameters:
     def __init__(self):
         param = PipelineParams()
+        self.dataset = param.dataset
+        self.dataset_subset = param.dataset_subset
+        self.dataset_split = param.dataset_split
         self.max_length = 512
         self.trust_remote_code=True
         self.return_attention_mask=False
-        self.dataset = param.dataset
-        self.dataset_subset = "train_prefs"
 # prompt values for Whisper
 class WhisperParameters:
     def __init__(self):
         param = PipelineParams()
         self.dataset = param.dataset
-        self.dataset_subset = "clean"
-        self.dataset_split = "validation"
+        self.dataset_subset = param.dataset_subset
+        self.dataset_split = param.dataset_split
         if "local_audio" in param.dataset_name:
             self.audio_folder = param.dataset
             self.reference_file = param.dataset + "/references.txt"

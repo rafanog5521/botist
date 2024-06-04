@@ -26,7 +26,7 @@ class TinyLlamaModelInteractor:
         transformers.logging.set_verbosity(transformers.logging.CRITICAL)  # disable base warnings
         self.dataset = self.tiny_param.dataset
         self.dataset_subset = self.tiny_param.dataset_subset
-        self.dataset_split = None
+        self.dataset_split = self.tiny_param.dataset_split
         torch.set_default_device("cuda")
 
     def prompt(self, question):
@@ -157,25 +157,20 @@ class WhisperModelInteractor:
         readable_transcription = readable_transcription.replace("<|startoftranscript|><|notimestamps|>", "").replace("<|endoftext|>", "")
         return {"current_response": readable_transcription, "response_time": response_time, "tokens_per_sec": tokens_per_second}
 
-class DatasetInteractor:
+class DatasetInteractor():
     def __init__(self, dataset, subset, subset_split):
-        if "tinyllama" in pipe_param.model_name.lower() or "phi" in pipe_param.model_name.lower():
+        print("\n*\tLoading dataset...")
+        if "local_audio" not in pipe_param.dataset_name:
             try:
-                print("Loading \"{}\" as dataset to be used".format(dataset))
-                self.dataset = load_dataset(dataset)
+                self.dataset = load_dataset(dataset, subset, split=subset_split)
             except Exception as e:
                 print("Error loading dataset: {}".format(e))
                 raise
-            else:
-                self.dataset_name = dataset
-                self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
-                self.dataset = self.dataset[self.dataset_subset]
-        if "whisper" in pipe_param.model_name.lower():
-            if "local_audio" not in pipe_param.dataset_name:
-                self.dataset = load_dataset(dataset, subset, split=subset_split)
-                self.dataset_subset = subset  # this select a particular subset(MIGHT BE SELECTED RANDOMLY)
-            else:
-                self.dataset_path = dataset
+            
+            self.dataset_subset = subset
+            self.dataset_name = dataset
+        else:
+            self.dataset_path = dataset
 
     def process_dataset_format(self, data):  # This is to standardize the format of the prompt list for report purpose
         progress_bar = tqdm(total=len(data), desc="Formatting dataset:")
@@ -218,9 +213,9 @@ class DatasetInteractor:
         # We filter the dataset to narrow the amount of prompts(selecting scores accordingly to
         # what is defined in the parameters)
         if "ultrafeedback_binarized" in pipe_param.dataset_name:
-            filtered_dataset = self.dataset.filter(lambda example: example["score_chosen"] >= pipe_param.score_base)
+            filtered_dataset = self.dataset
         elif "librispeech" in pipe_param.dataset_name:
-            filtered_dataset = self.dataset.filter(lambda example: example["speaker_id"] >= pipe_param.speaker_id)
+            filtered_dataset = self.dataset
         elif "local_audio" in pipe_param.dataset_name:
             wavs = self.capture_wavs()
             with open(os.path.join(self.dataset_path, "references.txt"), "r") as rfile:
@@ -242,6 +237,4 @@ class DatasetInteractor:
             selected_sample = filtered_dataset[:pipe_param.num_prompts]
             return selected_sample
         else:
-            filtered_dataset = filtered_dataset.shuffle()  #shuffled to randomize it
-            random_sample = filtered_dataset.select(range(pipe_param.num_prompts))
-            return self.process_dataset_format(random_sample)
+            return self.process_dataset_format(filtered_dataset.select(range(pipe_param.num_prompts)))
