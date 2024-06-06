@@ -45,5 +45,10 @@ There are currently 2 applications of this metric within the code:
 
 ## Performance
 Performance metric is applied within the following contexts:
-  - We meassure the time that it takes the model to generate the first token.
+  - We measure the time that it takes the model to generate the first token.
   - Calculate the amount of tokens generated per second.
+
+## Tools
+Compare two reports (number of lines should be equal):
+  - make compare_models PARAMS="--folders reports/2024-06-04_23-24-37_log reports/2024-06-05_11-50-30_log"
+

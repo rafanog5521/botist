@@ -1,7 +1,7 @@
 from datasets import load_dataset
-from config.parameters import *
+from config.parameters import TinyLlamaParameters, PhiParameters, WhisperParameters
 import transformers
-import time
+import os, time
 import re
 from tqdm import tqdm
 #Tinyllama
@@ -14,37 +14,50 @@ from transformers import WhisperForConditionalGeneration, WhisperProcessor
 import soundfile as sf
 import torch
 from evaluate import load
-
-pipe_param = PipelineParams()
+import random
+import numpy as np
 
 class TinyLlamaModelInteractor:
-    def __init__(self):
+    def __init__(self, pipeline_params):
+        self.pipe_param = pipeline_params
         self.tiny_param = TinyLlamaParameters()
-        self.__pipe__ = pipeline(task=pipe_param.task, model=pipe_param.model,
-                                 torch_dtype=pipe_param.torch_dtype, device_map=pipe_param.device_map,
+        self.__pipe__ = pipeline(task=self.pipe_param.task, model=self.pipe_param.model,
+                                 torch_dtype=self.pipe_param.torch_dtype, device_map=self.pipe_param.device_map,
                                  num_return_sequences=self.tiny_param.num_return_sequences)
         transformers.logging.set_verbosity(transformers.logging.CRITICAL)  # disable base warnings
         self.dataset = self.tiny_param.dataset
         self.dataset_subset = self.tiny_param.dataset_subset
         self.dataset_split = self.tiny_param.dataset_split
         torch.set_default_device("cuda")
+        SEED=0
+        random.seed(SEED)
+        torch.manual_seed(SEED)
+        np.random.seed(SEED)
 
     def prompt(self, question):
-        new_q = [question]
-        return self.__pipe__.tokenizer.apply_chat_template(new_q, tokenize=self.tiny_param.tokenize,
+        SYSTEM_PROMPT = {
+            "role": "system",
+            "content": "You are a friendly chatbot who tries to provide short and meaningful answers.",
+        }
+        prompt = [SYSTEM_PROMPT, question]
+        return self.__pipe__.tokenizer.apply_chat_template(prompt, tokenize=self.tiny_param.tokenize,
                                                            add_generation_prompt=self.tiny_param.add_generation_prompt)
 
     def init_model(self, question='Say Hello'): #Use a sample question to trigger downloads for Tinyllama resources.
         self.prompt(question)
 
     def ask_question(self, question, performance_metric=True):
+
         prompt = self.prompt(question)
         if performance_metric:
             start_time = time.time()
 
         output =  self.__pipe__(prompt, max_new_tokens=self.tiny_param.max_new_tokens, do_sample=self.tiny_param.do_sample,
                                 temperature=self.tiny_param.temperature, top_k=self.tiny_param.top_k, top_p=self.tiny_param.top_p)
-        response = {"output": output[0]["generated_text"].split('<|assistant|>\n')[1]}
+        try:
+            response = {"output": output[0]["generated_text"].split('<|assistant|>\n')[1]}
+        except:
+            response = {"output": output[0]["generated_text"]}
 
         if performance_metric:
             end_time = time.time()
@@ -59,10 +72,11 @@ class TinyLlamaModelInteractor:
         return response
 
 class PhiModelInteractor:
-    def __init__(self):
+    def __init__(self, pipeline_params):
+        self.pipe_param = pipeline_params
         self.phi_param = PhiParameters()
-        self.model = AutoModelForCausalLM.from_pretrained(pipe_param.model, torch_dtype=pipe_param.torch_dtype, trust_remote_code=self.phi_param.trust_remote_code)
-        self.tokenizer = AutoTokenizer.from_pretrained(pipe_param.model, trust_remote_code=self.phi_param.trust_remote_code)
+        self.model = AutoModelForCausalLM.from_pretrained(self.pipe_param.model, torch_dtype=self.pipe_param.torch_dtype, trust_remote_code=self.phi_param.trust_remote_code)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.pipe_param.model, trust_remote_code=self.phi_param.trust_remote_code)
         self.dataset = self.phi_param.dataset
         self.dataset_subset = self.phi_param.dataset_subset
         self.dataset_split = None
@@ -99,7 +113,8 @@ class PhiModelInteractor:
         return response
 
 class WhisperModelInteractor:
-    def __init__(self):
+    def __init__(self, pipeline_params):
+        self.pipe_param = pipeline_params
         self.whisper_param = WhisperParameters()
         self.dataset = self.whisper_param.dataset
         self.dataset_subset = self.whisper_param.dataset_subset
@@ -110,8 +125,8 @@ class WhisperModelInteractor:
             self.audio_folder = self.whisper_param.audio_folder # folder containing the wav files
             self.reference_file = self.whisper_param.reference_file # file containing the original references
 
-        self.model = WhisperForConditionalGeneration.from_pretrained(pipe_param.model).to("cuda")
-        self.processor = WhisperProcessor.from_pretrained(pipe_param.model)
+        self.model = WhisperForConditionalGeneration.from_pretrained(self.pipe_param.model).to("cuda")
+        self.processor = WhisperProcessor.from_pretrained(self.pipe_param.model)
 
     def init_model(self):
         pass
@@ -158,9 +173,10 @@ class WhisperModelInteractor:
         return {"current_response": readable_transcription, "response_time": response_time, "tokens_per_sec": tokens_per_second}
 
 class DatasetInteractor():
-    def __init__(self, dataset, subset, subset_split):
+    def __init__(self, pipeline_params, dataset, subset, subset_split):
+        self.pipe_param = pipeline_params
         print("\n*\tLoading dataset...")
-        if "local_audio" not in pipe_param.dataset_name:
+        if "local_audio" not in self.pipe_param.dataset_name:
             try:
                 self.dataset = load_dataset(dataset, subset, split=subset_split)
             except Exception as e:
@@ -175,14 +191,14 @@ class DatasetInteractor():
     def process_dataset_format(self, data):  # This is to standardize the format of the prompt list for report purpose
         progress_bar = tqdm(total=len(data), desc="Formatting dataset:")
         processed_data = []
-        if "ultrafeedback_binarized" in pipe_param.dataset_name:
+        if "ultrafeedback_binarized" in self.pipe_param.dataset_name:
             for p in data:
                 prompt = {"role": "user", "content": p["prompt"], "prompt_id": p["prompt_id"],
                           "expected_response": p["chosen"][1]}
                 processed_data.append(prompt)
                 progress_bar.update(1)
             progress_bar.close()
-        elif "librispeech" in pipe_param.dataset_name:
+        elif "librispeech" in self.pipe_param.dataset_name:
             for p in data:
                 prompt = {"file": p["file"], "audio": p["audio"],
                           "expected_response": p["text"], "speaker_id": p["speaker_id"],
@@ -190,7 +206,7 @@ class DatasetInteractor():
                 processed_data.append(prompt)
                 progress_bar.update(1)
             progress_bar.close()
-        elif "audio" in pipe_param.dataset_name:               
+        elif "audio" in self.pipe_param.dataset_name:               
             for r in refs:
                 prompt = {"expected_response": refs[r], "audio": wavs[refs.index(r)]}
                 processed_data.append(prompt())
@@ -212,11 +228,11 @@ class DatasetInteractor():
     def select_prompts_sample(self):
         # We filter the dataset to narrow the amount of prompts(selecting scores accordingly to
         # what is defined in the parameters)
-        if "ultrafeedback_binarized" in pipe_param.dataset_name:
+        if "ultrafeedback_binarized" in self.pipe_param.dataset_name:
             filtered_dataset = self.dataset
-        elif "librispeech" in pipe_param.dataset_name:
+        elif "librispeech" in self.pipe_param.dataset_name:
             filtered_dataset = self.dataset
-        elif "local_audio" in pipe_param.dataset_name:
+        elif "local_audio" in self.pipe_param.dataset_name:
             wavs = self.capture_wavs()
             with open(os.path.join(self.dataset_path, "references.txt"), "r") as rfile:
                 refs = []
@@ -233,8 +249,8 @@ class DatasetInteractor():
             print("Error processing the dataset sample")
             raise ValueError
 
-        if "local_audio" in pipe_param.dataset_name:
-            selected_sample = filtered_dataset[:pipe_param.num_prompts]
+        if "local_audio" in self.pipe_param.dataset_name:
+            selected_sample = filtered_dataset[:self.pipe_param.num_prompts]
             return selected_sample
         else:
-            return self.process_dataset_format(filtered_dataset.select(range(pipe_param.num_prompts)))
+            return self.process_dataset_format(filtered_dataset.select(range(self.pipe_param.num_prompts)))
