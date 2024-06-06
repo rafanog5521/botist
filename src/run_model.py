@@ -14,10 +14,19 @@ if __name__ == "__main__":
     parser.add_argument('-b', '--base_test', help='Base test using the questions.json file specified', required=False,
                         action=argparse.BooleanOptionalAction)
     parser.add_argument('-v', '--verbose', help='Verbose mode', required=False, action=argparse.BooleanOptionalAction)
+    parser.add_argument('-om', '--override_model', help='Override model from Param file', required=False, default=None, type=str)
+    parser.add_argument('-od', '--override_dataset', help='Override dataset from Param file', required=False, default=None, type=str)
     args = vars(parser.parse_args())
 
-    # Check parameters
     param = PipelineParams()
+    #Override model
+    if args["override_model"]:
+        param.model = args["override_model"]
+    #Override dataset
+    if args["override_dataset"]:
+        param.dataset = args["override_dataset"]
+
+    # Check parameters
     print("==========\n")
     print("*\tUsing local model from {}".format(param.model)) if (param.local_model) else print("*\tUsing remote model from {}".format(param.model))
     print("\n*\tUsing local dataset from {}\n".format(param.dataset)) if (param.local_dataset) else print("\n*\tUsing remote dataset from {}\n".format(param.dataset)) 
@@ -25,13 +34,13 @@ if __name__ == "__main__":
     #####
     # Model instantiation
     if 'TinyLlama/TinyLlama' in param.model:
-        interactor = TinyLlamaModelInteractor()
+        interactor = TinyLlamaModelInteractor(pipeline_params=param)
         test_type = "ask_question"
     elif 'microsoft/phi-2' in param.model:
-        interactor = PhiModelInteractor()
+        interactor = PhiModelInteractor(pipeline_params=param)
         test_type = "ask_question"
     elif 'openai/whisper' in param.model:
-        interactor = WhisperModelInteractor()
+        interactor = WhisperModelInteractor(pipeline_params=param)
         test_type = "transcription_of_speech" # "speech_evaluation" #transcription_of_speech
     else:
         test_type = None
@@ -62,7 +71,7 @@ if __name__ == "__main__":
                 if not hasattr(interactor, "dataset") or not hasattr(interactor, "dataset_subset"):
                     raise ValueError("No dataset or subset specified.")
                 else:
-                    data_interactor = DatasetInteractor(interactor.dataset, interactor.dataset_subset, interactor.dataset_split)
+                    data_interactor = DatasetInteractor(param, interactor.dataset, interactor.dataset_subset, interactor.dataset_split)
                     questionnaire = data_interactor.select_prompts_sample()  # to load the dataset to be used
 
             progress_bar = tqdm(total=len(questionnaire), desc="Processing prompts:")
@@ -83,7 +92,7 @@ if __name__ == "__main__":
             print(100 * wer.compute(references=result["reference"], predictions=result["prediction"]))
 
         case 'transcription_of_speech':
-            data_interactor = DatasetInteractor(interactor.dataset, interactor.dataset_subset, interactor.dataset_split)
+            data_interactor = DatasetInteractor(param, interactor.dataset, interactor.dataset_subset, interactor.dataset_split)
             transcription_array = data_interactor.select_prompts_sample()  # to load the dataset to be used
             progress_bar = tqdm(total=len(transcription_array), desc="Processing prompts:")
             # Second we send the question to the model

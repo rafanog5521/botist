@@ -16,17 +16,20 @@ class Reporter:
     def create_report_folder(self):
         new_folder = self.report_directory.replace("src", "reports")
         if not os.path.exists(new_folder):
-            print("Creating {} folder as it doesn't exists...".format(new_folder))
+            print("\n*\tCreating {} folder as it doesn't exists...".format(new_folder))
             os.mkdir(new_folder)
 
         date_string = "{}".format(datetime.today()).replace(":", "-").replace(".", "-")
+        date_string = ((date_string.split("-"))[0:-1])
+        date_string = "-".join(date_string)
+        date_string = date_string.replace(" ", "_")
         report_folder = new_folder + "/{}_log".format(date_string)
-        print("Creating report log here>>{}".format(report_folder))
+        print("\n*\tCreating report log here >> {}".format(report_folder))
         os.mkdir(report_folder)
         return report_folder
 
     def snapshot_file(self, file, rep_path):
-        print("Saving copy of {}".format(file))
+        print("\n*\tSaving copy of {}".format(file))
         with open(file, "rb") as file_to_snapshot:
             content = file_to_snapshot.read()
 

@@ -20,10 +20,17 @@ run_model:
 	--gpus all -v ./:/root/botist \
 	-v $(m)/:/root/botist/models/$(MODEL_PATH) \
 	-v $(d)/:/root/botist/datasets/$(DATASET_PATH) \
-	-it botist:latest sh -c "export PYTHONPATH="${PYTHONPATH}:/root" && /root/botist/src/run_model.py"
+	-it botist:latest sh -c "export PYTHONPATH="${PYTHONPATH}:/root" && /root/botist/src/run_model.py ${PARAMS}"
+
+compare_models:
+	sudo docker run --runtime=nvidia --gpus all \
+	--gpus all -v ./:/root/botist \
+	-it botist:latest sh -c "export PYTHONPATH="${PYTHONPATH}:/root" && /root/botist/src/compare_models.py ${PARAMS}"
 
 bash:
-	sudo docker run --runtime=nvidia --gpus all -v ./:/root/botist -it botist bash
+	sudo docker run --runtime=nvidia --gpus all \
+	--gpus all -v ./:/root/botist \
+	-it botist:latest sh -c "export PYTHONPATH="${PYTHONPATH}:/root" && bash"
 
 prune:
 	sudo docker system prune -a --volumes -f

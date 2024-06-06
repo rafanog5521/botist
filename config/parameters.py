@@ -16,7 +16,7 @@ class PipelineParams:
         self.task = "text-generation"
         self.torch_dtype = torch.bfloat16
         self.device_map = "auto"
-        self.num_prompts = 2000
+        self.num_prompts = 500
         self.score_base = 9
         self.speaker_id = 10
 
@@ -58,11 +58,11 @@ class TinyLlamaParameters:
         self.add_generation_prompt = True
         self.num_return_sequences = 1  # this is the key value to control the amount of possible responses obtained
         # interaction values
-        self.max_new_tokens = 1024
+        self.max_new_tokens = 50
         self.do_sample = True
         self.temperature = 1e-32
-        self.top_k = 50
-        self.top_p = 0.95
+        self.top_k = 1
+        self.top_p = 0.99
 # prompt values for Phi
 class PhiParameters:
     def __init__(self):
