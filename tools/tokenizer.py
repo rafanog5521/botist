@@ -1,4 +1,4 @@
-from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
+from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC, AutoTokenizer
 from datasets import load_dataset
 from src.reports_module import Reporter
 from tqdm import tqdm
@@ -11,9 +11,11 @@ import logging
 import concurrent.futures
 import soundfile as sf
 
-MODEL = "facebook/wav2vec2-base-960h"
+AUDIO_MODEL = "facebook/wav2vec2-base-960h"
+MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 SAMPLING_RATE = 16000
-EXTRACTED_PATH_FRACTION = "/LibriSpeech/dev-clean/" # this is to cover the difference between the theoretical path and actual path after extraction
+# Uncomment next line and set it up when working with local audio
+# EXTRACTED_PATH_FRACTION = "/LibriSpeech/dev-clean/" # this is to cover the difference between the theoretical path and actual path after extraction
 
 def load_audio(audio_path):
     try:
@@ -70,7 +72,7 @@ def process_entry(entry, args):
         logging.error(f"Exception: {e} in entry {entry}")
     return results
 
-def process_ds(args, ds):
+def process_audio_ds(args, ds):
     progress_bar = tqdm(total=len(ds), desc="Generating tokens:")
     token_list = []
 
@@ -101,30 +103,62 @@ def process_ds(args, ds):
     progress_bar.close()
     return token_list
 
+def process_ds(args, ds):
+    progress_bar = tqdm(total=len(ds), desc="Turning words into tokens")
+    token_list = []
+    for p in ds:
+        tokens = model.tokenize(p["prompt"])
+        ids = model.convert_tokens_to_ids(tokens)
+        size_processed = round(len(tokens) / 2)
+        new_prompt = model.decode(ids[0:size_processed])
+        tokenized = {
+            "id": p["prompt_id"],
+            "original_prompt": p["prompt"],
+            "tokens": tokens,
+            "token_ids": ids, 
+            "processed":  tokens[0:size_processed],
+            "processed_token_ids": ids[0:size_processed],
+            "prompt": new_prompt,
+            "chosen": p["chosen"]
+        }
+        token_list.append(tokenized)
+        progress_bar.update(1)
+    progress_bar.close()
+    return token_list
+        
+
 def main():
     parser = argparse.ArgumentParser(description=f"Tool to tokenize audio dataset using {MODEL}")
     parser.add_argument("-d", "--dataset", type=str, required=True, help="Name of the dataset to load")
     parser.add_argument("-s", "--subset", type=str, required=True, help="Subset of the dataset to load")
     parser.add_argument("-p", "--split", type=str, required=True, help="Split of the dataset to load (e.g., train, validation, test)")
+    parser.add_argument("-a", "--audio", action="store_true")
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
     parser.add_argument("-l", "--load-audio", action="store_true", help="Indicates to work from the audio file instead of the array")
     parser.add_argument("-t", "--threads", type=int, default=4, help="Number of threads to use for parallel processing")
+    parser.add_argument("-ne", "--num-samples", type=int, default=100, required=False, help="To limit the number of samples to process")
     parser.add_argument("--batch_size", type=int, default=10, help="Batch size for processing")
     args = parser.parse_args()
 
+    model_id = AUDIO_MODEL if args.audio else MODEL
+
     global processor
-    processor = Wav2Vec2Processor.from_pretrained(MODEL, ignore_mismatched_sizes=True)
     global model
-    model = Wav2Vec2ForCTC.from_pretrained(MODEL, ignore_mismatched_sizes=True)
-    global device
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.to(device)
-
-    ds = load_dataset(args.dataset, args.subset, split=args.split, trust_remote_code=True)
+    if args.audio:
+        processor = Wav2Vec2Processor.from_pretrained(model_id, ignore_mismatched_sizes=True)
+        model = Wav2Vec2ForCTC.from_pretrained(model_id, ignore_mismatched_sizes=True)
+        global device
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model.to(device)
+    else:
+        model = AutoTokenizer.from_pretrained(model_id)
     
-    print(f"\n* Working with {MODEL} to tokenize...")
+    ds = load_dataset(args.dataset, args.subset, split=args.split, trust_remote_code=True)
+    ds = ds.select(range(args.num_samples))
 
-    token_list = process_ds(args, ds)
+    print(f"\n* Processing {args.dataset} with {model_id} to tokenize...")
+
+    token_list = process_audio_ds(args, ds) if args.audio else process_ds(args, ds)
     rep = Reporter(args)
     rep.dump_info(token_list, args.subset + "_" + args.split, rep.create_report_folder())
 
