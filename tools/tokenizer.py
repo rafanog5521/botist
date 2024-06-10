@@ -14,7 +14,7 @@ import soundfile as sf
 AUDIO_MODEL = "facebook/wav2vec2-base-960h"
 MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 SAMPLING_RATE = 16000
-N_TOKENS_PROMPT = 20
+N_TOKENS_PROMPT = 20 # this part might be reworked to calculate the prompt and slice it perhaps in half
 # Uncomment next line and set it up when working with local audio
 # EXTRACTED_PATH_FRACTION = "/LibriSpeech/dev-clean/" # this is to cover the difference between the theoretical path and actual path after extraction
 
@@ -105,8 +105,8 @@ def process_audio_ds(args, ds):
     return token_list
 
 def process_ds(args, ds):
+    progress_bar = tqdm(total=len(ds), desc="Turning words into tokens")
     token_list = []
-    progress_bar = tqdm(total=len(ds), "Turning words into tokens")
     for p in ds:
         tokens = model.tokenize(p["prompt"])
         ids = model.convert_tokens_to_ids(tokens)
@@ -115,12 +115,13 @@ def process_ds(args, ds):
             "prompt": p["prompt"],
             "tokens": tokens,
             "token_ids": ids, 
-            "processed":  tokens[0:N_TOKENS_PROMPT],
+            "processed":  tokens[0:N_TOKENS_PROMPT], # implementation to slice the prompt would be in this line
             "processed_token_ids": ids[0:N_TOKENS_PROMPT]
         }
-    
-    for t in token_list:
-        print(t)
+        token_list.append(tokenized)
+        progress_bar.update(1)
+    progress_bar.close()
+    return token_list
         
 
 def main():
@@ -136,28 +137,27 @@ def main():
     parser.add_argument("--batch_size", type=int, default=10, help="Batch size for processing")
     args = parser.parse_args()
 
-    model_id = AUDIO_MODEL if args.process_audio else MODEL
+    model_id = AUDIO_MODEL if args.audio else MODEL
 
     global processor
     global model
-    if args.process_audio:
+    if args.audio:
         processor = Wav2Vec2Processor.from_pretrained(model_id, ignore_mismatched_sizes=True)
         model = Wav2Vec2ForCTC.from_pretrained(model_id, ignore_mismatched_sizes=True)
+        global device
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model.to(device)
     else:
         model = AutoTokenizer.from_pretrained(model_id)
     
-    global device
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.to(device)
-
     ds = load_dataset(args.dataset, args.subset, split=args.split, trust_remote_code=True)
     ds = ds.select(range(args.num_samples))
 
     print(f"\n* Processing {args.dataset} with {model_id} to tokenize...")
 
-    token_list = process_audio_ds(args, ds) if args.process_audio else process_ds(args, ds)
+    token_list = process_audio_ds(args, ds) if args.audio else process_ds(args, ds)
     rep = Reporter(args)
-    # rep.dump_info(token_list, args.subset + "_" + args.split, rep.create_report_folder())
+    rep.dump_info(token_list, args.subset + "_" + args.split, rep.create_report_folder())
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.ERROR)
