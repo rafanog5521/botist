@@ -14,7 +14,6 @@ import soundfile as sf
 AUDIO_MODEL = "facebook/wav2vec2-base-960h"
 MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 SAMPLING_RATE = 16000
-N_TOKENS_PROMPT = 20 # this part might be reworked to calculate the prompt and slice it perhaps in half
 # Uncomment next line and set it up when working with local audio
 # EXTRACTED_PATH_FRACTION = "/LibriSpeech/dev-clean/" # this is to cover the difference between the theoretical path and actual path after extraction
 
@@ -110,13 +109,17 @@ def process_ds(args, ds):
     for p in ds:
         tokens = model.tokenize(p["prompt"])
         ids = model.convert_tokens_to_ids(tokens)
+        size_processed = round(len(tokens) / 2)
+        new_prompt = model.decode(ids[0:size_processed])
         tokenized = {
             "id": p["prompt_id"],
-            "prompt": p["prompt"],
+            "original_prompt": p["prompt"],
             "tokens": tokens,
             "token_ids": ids, 
-            "processed":  tokens[0:N_TOKENS_PROMPT], # implementation to slice the prompt would be in this line
-            "processed_token_ids": ids[0:N_TOKENS_PROMPT]
+            "processed":  tokens[0:size_processed],
+            "processed_token_ids": ids[0:size_processed],
+            "prompt": new_prompt,
+            "chosen": p["chosen"]
         }
         token_list.append(tokenized)
         progress_bar.update(1)
